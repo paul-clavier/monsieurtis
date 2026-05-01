@@ -1,0 +1,25 @@
+{
+    "name": "monsieurtis",
+    "private": true,
+    "devDependencies": {
+        "@commitlint/cli": "20.5.0",
+        "@commitlint/config-conventional": "20.5.0",
+        "@eslint/eslintrc": "3.3.5",
+        "@eslint/js": "10.0.1",
+        "@types/node": "25.6.0",
+        "@typescript-eslint/eslint-plugin": "8.58.2",
+        "@typescript-eslint/parser": "8.58.2",
+        "eslint": "10.2.0",
+        "eslint-config-prettier": "10.1.8",
+        "eslint-plugin-prettier": "5.5.5",
+        "husky": "9.1.7",
+        "lint-staged": "16.4.0",
+        "prettier": "3.8.3",
+        "prettier-plugin-organize-imports": "4.3.0",
+        "prisma": "7.7.0",
+        "ts-node": "10.9.2",
+        "tsconfig-paths": "4.2.0",
+        "typescript": "6.0.2",
+        "typescript-eslint": "8.58.2"
+    }
+}
