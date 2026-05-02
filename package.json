@@ -1,7 +1,8 @@
 {
     "name": "monsieurtis",
     "private": true,
-    "workspaces": ["apps/*", "lib/packages/*"],
+    "workspaces": ["apps/*", "lib/packages/*", "ui"],
+    "packageManager": "bun@1.3.13",
     "devDependencies": {
         "@commitlint/cli": "20.5.0",
         "@commitlint/config-conventional": "20.5.0",
