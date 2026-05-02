@@ -9,6 +9,7 @@
     "exports": {
         "./components/*": "./components/*.tsx",
         "./hooks/*": "./hooks/*.ts",
+        "./images/*": "./images/*",
         "./lib/*": "./lib/*.ts",
         "./styles/globals.css": "./styles/globals.css"
     },
@@ -41,10 +42,8 @@
         "@tailwindcss/postcss": "4.0.0",
         "@types/react": "19.0.0",
         "@types/react-dom": "19.0.0",
-        "react": "19.0.0",
-        "react-dom": "19.0.0",
         "tailwindcss": "4.0.0",
         "tw-animate-css": "latest",
-        "typescript": "5.6.0"
+        "typescript": "6.0.2"
     }
 }

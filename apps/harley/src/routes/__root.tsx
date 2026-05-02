@@ -1,8 +1,8 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanStackDevtools } from '@tanstack/react-devtools'
+import logo from '@monsieurtis/ui/images/logo.svg'
+import { createRootRoute } from '@tanstack/react-router'
 
 import appCss from '../styles.css?url'
+import { PageLayout } from '../layout/page-layout'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -23,32 +23,12 @@ export const Route = createRootRoute({
         rel: 'stylesheet',
         href: appCss,
       },
+      {
+        rel: 'icon',
+        type: 'image/svg+xml',
+        href: logo,
+      },
     ],
   }),
-  shellComponent: RootDocument,
+  shellComponent: PageLayout,
 })
-
-function RootDocument({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <TanStackDevtools
-          config={{
-            position: 'bottom-right',
-          }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
-        <Scripts />
-      </body>
-    </html>
-  )
-}

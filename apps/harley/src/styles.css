@@ -1,17 +1,51 @@
-
-@import "tailwindcss";
+@import "../../ui/styles/globals.css";
+@source "../../../ui/components/**/*.{ts,tsx}";
 
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 html,
 body,
 #app {
-  min-height: 100%;
+    min-height: 100%;
 }
 
 body {
-  margin: 0;
+    margin: 0;
 }
 
+:root[data-color="strawhat"] {
+    --background: #f6ecd0;
+    --border: #bf1408;
+    --primary: #bf1408;
+    --primary-foreground: #f6ecd0;
+    --ring: #bf1408;
+}
+.dark[data-color="strawhat"] {
+    --background: #0a0801;
+    --border: #bf1408;
+    --primary: #bf1408;
+    --primary-foreground: #0a0801;
+    --ring: #bf1408;
+}
+
+:root[data-color="forest"] {
+    --background: #eaf2dc;
+    --border: #166910;
+    --primary: #166910;
+    --primary-foreground: #eaf2dc;
+    --ring: #166910;
+}
+.dark[data-color="forest"] {
+    --background: #020a01;
+    --border: #166910;
+    --primary: #166910;
+    --primary-foreground: #020a01;
+    --ring: #166910;
+}
+
+body {
+    background: var(--background);
+    color: var(--foreground);
+}
