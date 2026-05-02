@@ -1,0 +1,12 @@
+{
+    "name": "@monsieurtis/core",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        "./utils/*": "./utils/*.ts"
+    },
+    "devDependencies": {
+        "typescript": "6.0.2"
+    }
+}

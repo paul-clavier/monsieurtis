@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "lib": ["ES2022"],
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "isolatedModules": true,
+        "verbatimModuleSyntax": true,
+        "noEmit": true,
+        "paths": {
+            "@monsieurtis/core/*": ["./*"]
+        }
+    },
+    "include": ["utils"]
+}
