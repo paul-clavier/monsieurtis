@@ -1,28 +1,18 @@
 {
+    "extends": "@monsieurtis/tsconfig/server.json",
     "compilerOptions": {
-        "module": "nodenext",
-        "moduleResolution": "nodenext",
-        "resolvePackageJsonExports": true,
-        "esModuleInterop": true,
-        "isolatedModules": true,
-        "declaration": true,
-        "removeComments": true,
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "allowSyntheticDefaultImports": true,
-        "target": "ES2023",
-        "sourceMap": true,
-        "outDir": "./dist",
-        "incremental": true,
-        "skipLibCheck": true,
-        "strictNullChecks": true,
-        "forceConsistentCasingInFileNames": true,
+        "noEmit": true,
         "noImplicitAny": false,
         "strictBindCallApply": false,
         "noFallthroughCasesInSwitch": false,
+        "noUncheckedIndexedAccess": false,
+        "baseUrl": ".",
         "paths": {
             "@/*": ["./src/*"],
-            "@/interfaces/*": ["../interfaces/*"]
+            "@/interfaces/*": ["../interfaces/*"],
+            "@monsieurtis/core": ["../../../lib/core/src/index.ts"],
+            "@monsieurtis/prisma": ["../../../lib/packages/prisma/src/index.ts"]
         }
-    }
+    },
+    "include": ["src", "../interfaces"]
 }

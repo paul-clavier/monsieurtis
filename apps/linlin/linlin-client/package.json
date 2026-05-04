@@ -9,7 +9,8 @@
         "dev": "vite dev --port 3000",
         "build": "vite build",
         "preview": "vite preview",
-        "test": "vitest run"
+        "test": "vitest run",
+        "typecheck": "tsc --noEmit"
     },
     "dependencies": {
         "@monsieurtis/ui": "workspace:*",
@@ -26,6 +27,7 @@
         "tailwindcss": "^4.1.18"
     },
     "devDependencies": {
+        "@monsieurtis/tsconfig": "workspace:*",
         "@tailwindcss/typography": "^0.5.16",
         "@tanstack/devtools-vite": "latest",
         "@testing-library/dom": "^10.4.1",
@@ -35,14 +37,7 @@
         "@types/react-dom": "^19.2.0",
         "@vitejs/plugin-react": "^6.0.1",
         "jsdom": "^28.1.0",
-        "typescript": "^6.0.2",
         "vite": "^8.0.0",
         "vitest": "^4.1.5"
-    },
-    "pnpm": {
-        "onlyBuiltDependencies": [
-            "esbuild",
-            "lightningcss"
-        ]
     }
 }

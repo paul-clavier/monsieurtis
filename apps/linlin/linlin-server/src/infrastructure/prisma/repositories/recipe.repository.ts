@@ -1,8 +1,8 @@
 import { Recipe, RecipeDetail } from "@/interfaces/domain/recipe";
 import { Setup, SetupIngredientDetail } from "@/interfaces/domain/setup";
+import { Mutable, Page, PageQuery } from "@monsieurtis/core";
+import { PrismaService } from "@monsieurtis/prisma";
 import { Injectable } from "@nestjs/common";
-import { Mutable, Page, PageQuery } from "@monsieurtis/core/utils/query";
-import { PrismaService } from "../prisma.service";
 
 const RECIPE_INCLUDE = {
     setups: {
@@ -111,10 +111,7 @@ export class PrismaRecipeRepository {
         return result.count;
     }
 
-    async update(
-        id: string,
-        data: Partial<Mutable<Recipe>>,
-    ): Promise<Recipe> {
+    async update(id: string, data: Partial<Mutable<Recipe>>): Promise<Recipe> {
         const row = await this.prisma.recipe.update({
             where: { id },
             data,

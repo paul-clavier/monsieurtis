@@ -1,7 +1,7 @@
+import { Mutable, Page, PageQuery } from "@monsieurtis/core";
 import { Ingredient } from "@/interfaces/domain/ingredient";
-import { Mutable, Page, PageQuery } from "@monsieurtis/core/utils/query";
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../prisma.service";
+import { PrismaService } from "@monsieurtis/prisma";
 
 const mapIngredient = (row: {
     id: string;

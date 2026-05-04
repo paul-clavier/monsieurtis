@@ -1,4 +1,4 @@
-import { Entity } from "../../../../lib/core/utils/query";
+import { Entity } from "@monsieurtis/core";
 
 export interface Ingredient extends Entity {
     name: string;

@@ -10,6 +10,7 @@
         "build": "vite build",
         "preview": "vite preview",
         "test": "vitest run",
+        "typecheck": "tsc --noEmit",
         "lint": "eslint",
         "format": "prettier --write . && eslint --fix",
         "check": "prettier --check ."
@@ -29,6 +30,7 @@
         "tailwindcss": "^4.1.18"
     },
     "devDependencies": {
+        "@monsieurtis/tsconfig": "workspace:*",
         "@tailwindcss/typography": "^0.5.16",
         "@tanstack/devtools-vite": "^0.6.0",
         "@tanstack/eslint-config": "latest",
@@ -41,14 +43,7 @@
         "eslint": "^9.20.0",
         "jsdom": "^28.1.0",
         "prettier": "^3.8.1",
-        "typescript": "^6.0.2",
         "vite": "^8.0.0",
         "vitest": "^4.1.5"
-    },
-    "pnpm": {
-        "onlyBuiltDependencies": [
-            "esbuild",
-            "lightningcss"
-        ]
     }
 }

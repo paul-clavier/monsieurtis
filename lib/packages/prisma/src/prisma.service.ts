@@ -1,13 +1,10 @@
-import { DATABASE_URL } from "@/app.constants";
-import { Injectable } from "@nestjs/common";
 import { PrismaClient } from "@prisma/client";
 
 export const BATCH_OPERATION_LIMIT = 30000;
 export const DB_CONNECTION_LIMIT = 20;
 
-@Injectable()
 export class PrismaService extends PrismaClient {
-    constructor() {
+    constructor(databaseUrl: string) {
         super({
             log: [
                 // "event": Prisma does not print anything;
@@ -32,7 +29,7 @@ export class PrismaService extends PrismaClient {
             ],
             datasources: {
                 db: {
-                    url: DATABASE_URL,
+                    url: databaseUrl,
                 },
             },
         });

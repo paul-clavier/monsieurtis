@@ -39,11 +39,11 @@
         "zod": "4.4.2"
     },
     "devDependencies": {
+        "@monsieurtis/tsconfig": "workspace:*",
         "@tailwindcss/postcss": "4.0.0",
         "@types/react": "19.0.0",
         "@types/react-dom": "19.0.0",
         "tailwindcss": "4.0.0",
-        "tw-animate-css": "latest",
-        "typescript": "6.0.2"
+        "tw-animate-css": "latest"
     }
 }

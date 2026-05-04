@@ -1,10 +1,13 @@
 {
-    "name": "@monsieurtis/core",
+    "name": "@monsieurtis/prisma",
     "version": "0.0.0",
     "private": true,
     "type": "module",
     "exports": {
         ".": "./src/index.ts"
+    },
+    "dependencies": {
+        "@prisma/client": "6.7.0"
     },
     "devDependencies": {
         "@monsieurtis/tsconfig": "workspace:*"

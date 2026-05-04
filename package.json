@@ -1,13 +1,22 @@
 {
     "name": "monsieurtis",
     "private": true,
-    "workspaces": ["apps/*", "apps/*/*", "lib/core", "lib/packages/*", "ui"],
+    "workspaces": [
+        "apps/harley",
+        "apps/linlin/linlin-server",
+        "apps/linlin/linlin-client",
+        "lib/tsconfig",
+        "lib/core",
+        "lib/ui",
+        "lib/packages/*"
+    ],
     "packageManager": "bun@1.3.13",
     "devDependencies": {
         "@commitlint/cli": "20.5.0",
         "@commitlint/config-conventional": "20.5.0",
         "@eslint/eslintrc": "3.3.5",
         "@eslint/js": "10.0.1",
+        "@types/bun": "1.2.0",
         "@types/node": "25.6.0",
         "@typescript-eslint/eslint-plugin": "8.58.2",
         "@typescript-eslint/parser": "8.58.2",
