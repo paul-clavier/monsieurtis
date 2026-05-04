@@ -1,5 +1,5 @@
 import { Entity } from "@monsieurtis/core";
-import { Setup } from "./setup";
+import { Setup } from "./setup.entity";
 
 export interface Recipe extends Entity {
     name: string;
@@ -9,6 +9,6 @@ export interface Recipe extends Entity {
     time: number;
 }
 
-export interface RecipeDetail extends Recipe {
+export interface RecipeWithSetups extends Recipe {
     setups: Setup[];
 }

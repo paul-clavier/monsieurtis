@@ -1,11 +1,11 @@
-import { Mutable, Page, PageQuery } from "@monsieurtis/core";
 import {
     BaseSetup,
     Setup,
     SetupIngredientDetail,
-} from "@/interfaces/domain/setup";
-import { Injectable } from "@nestjs/common";
+} from "@/interfaces/domain/setup.entity";
+import { Mutable, Page, PageQuery } from "@monsieurtis/core";
 import { PrismaService } from "@monsieurtis/prisma";
+import { Injectable } from "@nestjs/common";
 
 const SETUP_INCLUDE = {
     ingredients: { include: { ingredient: true } },

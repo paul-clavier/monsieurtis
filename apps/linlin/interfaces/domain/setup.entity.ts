@@ -1,7 +1,7 @@
 import { Entity } from "@monsieurtis/core";
-import { Ingredient } from "./ingredient";
+import { Ingredient } from "./ingredient.entity";
 
-export interface BaseSetup extends Entity {
+export interface Setup extends Entity {
     name: string;
     label: string;
     description: string;
@@ -16,11 +16,11 @@ export interface SetupIngredient {
     unit: string;
 }
 
-export type SetupIngredientDetail = SetupIngredient & {
+export type SetupIngredientWithIngredient = SetupIngredient & {
     ingredient: Ingredient;
 };
 
-export type Setup = BaseSetup & {
-    ingredients: SetupIngredientDetail[];
-    subSetups: BaseSetup[];
+export type SetupWithIngredientsAndSubSetups = Setup & {
+    ingredients: SetupIngredientWithIngredient[];
+    subSetups: Setup[];
 };

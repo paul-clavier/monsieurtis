@@ -1,7 +1,12 @@
+import { Ingredient } from "@/interfaces/domain/ingredient.entity";
 import { Mutable, Page, PageQuery } from "@monsieurtis/core";
-import { Ingredient } from "@/interfaces/domain/ingredient";
-import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@monsieurtis/prisma";
+import { Injectable } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
+
+type PrismaIngredient = Prisma.PromiseReturnType<
+    PrismaIngredientRepository["_findUnique"]
+>;
 
 const mapIngredient = (row: {
     id: string;
@@ -16,6 +21,8 @@ const mapIngredient = (row: {
 @Injectable()
 export class PrismaIngredientRepository {
     constructor(private readonly prisma: PrismaService) {}
+
+    private _findUnique;
 
     async getOne(id: string): Promise<Ingredient | null> {
         const row = await this.prisma.ingredient.findUnique({ where: { id } });

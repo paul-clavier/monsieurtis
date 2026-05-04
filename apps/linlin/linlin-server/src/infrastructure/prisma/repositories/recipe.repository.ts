@@ -1,5 +1,5 @@
-import { Recipe, RecipeDetail } from "@/interfaces/domain/recipe";
-import { Setup, SetupIngredientDetail } from "@/interfaces/domain/setup";
+import { Recipe, RecipeDetail } from "@/interfaces/domain/recipe.entity";
+import { Setup, SetupIngredientDetail } from "@/interfaces/domain/setup.entity";
 import { Mutable, Page, PageQuery } from "@monsieurtis/core";
 import { PrismaService } from "@monsieurtis/prisma";
 import { Injectable } from "@nestjs/common";
@@ -13,33 +13,11 @@ const RECIPE_INCLUDE = {
     },
 } as const;
 
-const mapRecipe = (row: {
-    id: string;
-    name: string;
-    label: string;
-    description: string;
-    capacity: number | null;
-    time: number;
-}): Recipe => ({
-    id: row.id,
-    name: row.name,
-    label: row.label,
-    description: row.description,
-    capacity: row.capacity,
-    time: row.time,
+const mapRecipe = (row): Recipe => ({
+    ...row,
 });
 
-const mapSetupIngredient = (row: any): SetupIngredientDetail => ({
-    setupId: row.setupId,
-    ingredientId: row.ingredientId,
-    quantity: row.quantity,
-    unit: row.unit,
-    ingredient: {
-        id: row.ingredient.id,
-        name: row.ingredient.name,
-        label: row.ingredient.label,
-    },
-});
+const mapSetupIngredient = (row): SetupIngredientDetail => row;
 
 const mapSetup = (row: any): Setup => ({
     id: row.id,
