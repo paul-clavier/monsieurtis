@@ -66,8 +66,19 @@ export abstract class PrismaCommonRepository<
         );
     }
 
-    private buildWhere(values?: Partial<TFilters>): TWhere | undefined {
-        if (!values) return undefined;
+    private buildWhere(
+        filterList?: Partial<TFilters>[],
+    ): TWhere | undefined {
+        if (!filterList || filterList.length === 0) return undefined;
+        const branches = filterList
+            .map((values) => this.buildWhereOne(values))
+            .filter((w): w is TWhere => w !== undefined);
+        if (branches.length === 0) return undefined;
+        if (branches.length === 1) return branches[0];
+        return { OR: branches } as unknown as TWhere;
+    }
+
+    private buildWhereOne(values: Partial<TFilters>): TWhere | undefined {
         const fragments = (Object.keys(values) as Array<keyof TFilters>)
             .filter((k) => values[k] !== undefined)
             .map((k) => this.filters[k](values[k] as TFilters[typeof k]));

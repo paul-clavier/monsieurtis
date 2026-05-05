@@ -16,7 +16,7 @@ A concrete repository extends it, provides a couple of fields, and gets the full
 | Member                         | Purpose                                                             |
 | ------------------------------ | ------------------------------------------------------------------- |
 | `protected readonly relations` | Catalog of relations callers can request via `include: ["…"]`       |
-| `protected readonly filters`   | Catalog of filter callbacks; values plugged in via `filters: { … }` |
+| `protected readonly filters`   | Catalog of filter callbacks; values plugged in via `filters: [{ … }, …]` |
 
 ## Minimal example — no relations, no filters
 
@@ -63,7 +63,9 @@ tagRepo.deleteMany(ids);                           // string[]
 
 ## Adding filters
 
-Filters are functions `(value) => Partial<TWhere>` keyed by name. The base class composes them with `AND` when several are supplied.
+Filters are functions `(value) => Partial<TWhere>` keyed by name.
+
+`filters` on the query is a **list of filter objects**. Within one object, the supplied keys are combined with `AND`. The list itself is combined with `OR` — i.e. `filters: [A, B]` matches rows that match `A` *or* `B`.
 
 ```ts
 type ArticleFilters = {
@@ -88,17 +90,29 @@ export class PrismaArticleRepository extends PrismaCommonRepository<
 }
 ```
 
-Call site:
+Call site — single filter (AND of its keys):
 
 ```ts
 articleRepo.getPage({
     pagination: { page: 1, pageSize: 20 },
-    filters: { search: "prisma", authorId: someId },
+    filters: [{ search: "prisma", authorId: someId }],
     sort: { field: "createdAt", direction: "DESC" },
 });
 ```
 
-Filters not provided are skipped. `filters: undefined` ⇒ no `where`.
+Call site — OR across two filters:
+
+```ts
+articleRepo.getPage({
+    pagination: { page: 1, pageSize: 20 },
+    filters: [
+        { authorId: meId, search: "prisma" }, // (authorId = me AND title ~ "prisma")
+        { authorId: coAuthorId },             //   OR  authorId = coAuthor
+    ],
+});
+```
+
+Keys with `undefined` values inside an object are skipped. `filters: undefined` or `filters: []` ⇒ no `where`. An object whose keys all resolve to `undefined` contributes no branch.
 
 ## Adding relations
 
@@ -320,7 +334,7 @@ Read methods take a single `query` object, defined in [`@monsieurtis/core`](../.
 
 ```ts
 interface Query<TFilter, TSort, TInclude> {
-    filters?: TFilter;
+    filters?: TFilter[];
     sort?: { field: TSort; direction: "ASC" | "DESC" };
     include?: TInclude[];
 }
@@ -344,6 +358,6 @@ Callers don't have to instantiate `Query`/`PageQuery` directly — they pass a l
 
 - **`updateMany` / `deleteMany` return the input ids**, not the count of affected rows. If a passed id didn't match a real row, it's still in the returned array. Replace with a 2-step `findMany` + `updateMany|deleteMany` in subclasses where that distinction matters.
 - **`createMany` uses `createManyAndReturn`** (Prisma 5+). The base class selects `{ id: true }` and returns the new ids.
-- **Filters are always combined with `AND`.** For `OR` between filters, declare a single richer filter that takes a structured value and emits `{ OR: [...] }` itself.
+- **Filter composition.** Within one filter object, keys are combined with `AND`. Across the `filters` list, objects are combined with `OR`. For more complex boolean shapes, declare a single richer filter that takes a structured value and emits the desired `where` fragment itself.
 - **`where` and `orderBy` are typed loosely (`object`)** in the default `PrismaDelegate` interface. Subclasses can tighten by passing `Prisma.<Model>WhereInput` etc. as the 4th–7th type parameters; defaults keep the surface usable without that.
 - **Relations don't auto-recurse.** The map function for a relation is invoked **once per call** with the raw rows and is responsible for any nested mapping (e.g. `subSetupsWithIngredients` runs `mapItem` over each child plus `mapTag` over each child's tags).

@@ -19,7 +19,7 @@ export interface Page<T> {
 }
 
 export interface Query<TFilter, TSort, TInclude> {
-    filters?: TFilter;
+    filters?: TFilter[];
     sort?: { field: TSort; direction: SortDirection };
     include?: TInclude[];
 }
