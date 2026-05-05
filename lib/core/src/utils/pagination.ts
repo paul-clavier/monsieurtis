@@ -21,11 +21,9 @@ export interface PaginatedResult<T> {
 // _______________________________
 // SORT
 
-export type SortDirection = "ASC" | "DESC";
-
 export interface SortQuery {
   field: string;
-  direction: SortDirection;
+  direction: "ASC" | "DESC";
 }
 
 // _______________________________

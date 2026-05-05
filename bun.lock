@@ -147,6 +147,7 @@
       "name": "@monsieurtis/prisma",
       "version": "0.0.0",
       "dependencies": {
+        "@monsieurtis/core": "workspace:*",
         "@prisma/client": "6.7.0",
       },
       "devDependencies": {

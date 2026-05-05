@@ -1,7 +1,11 @@
 import { Entity } from "@monsieurtis/core";
 import { Setup } from "./setup.entity";
 
-export interface Recipe extends Entity {
+export interface RecipeRelations {
+    setups: Setup[];
+}
+
+export interface Recipe extends Entity, Partial<RecipeRelations> {
     name: string;
     label: string;
     description: string;
@@ -9,6 +13,6 @@ export interface Recipe extends Entity {
     time: number;
 }
 
-export interface RecipeWithSetups extends Recipe {
+export type WithSetups<T> = T & {
     setups: Setup[];
-}
+};

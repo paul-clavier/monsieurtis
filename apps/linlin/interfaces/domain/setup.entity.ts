@@ -1,7 +1,19 @@
 import { Entity } from "@monsieurtis/core";
 import { Ingredient } from "./ingredient.entity";
 
-export interface Setup extends Entity {
+export interface SetupIngredient {
+    setupId: string;
+    ingredientId: string;
+    ingredient: Ingredient;
+    quantity: number;
+    unit: string;
+}
+export interface SetupRelations {
+    ingredients: SetupIngredient[];
+    subSetups: Setup[];
+}
+
+export interface Setup extends Entity, Partial<SetupRelations> {
     name: string;
     label: string;
     description: string;
@@ -9,18 +21,10 @@ export interface Setup extends Entity {
     capacity: number | null;
 }
 
-export interface SetupIngredient {
-    setupId: string;
-    ingredientId: string;
-    quantity: number;
-    unit: string;
-}
-
-export type SetupIngredientWithIngredient = SetupIngredient & {
-    ingredient: Ingredient;
+export type WithIngredients<T> = T & {
+    ingredients: SetupIngredient[];
 };
 
-export type SetupWithIngredientsAndSubSetups = Setup & {
-    ingredients: SetupIngredientWithIngredient[];
+export type WithSubSetups<T> = T & {
     subSetups: Setup[];
 };

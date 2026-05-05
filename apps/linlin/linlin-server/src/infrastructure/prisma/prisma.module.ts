@@ -1,5 +1,5 @@
 import { DATABASE_URL } from "@/app.constants";
-import { PrismaService } from "@monsieurtis/prisma";
+import { PrismaService } from "./prisma.service";
 import { Module } from "@nestjs/common";
 import { PrismaIngredientRepository } from "./repositories/ingredient.repository";
 import { PrismaRecipeRepository } from "./repositories/recipe.repository";
