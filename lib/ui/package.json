@@ -14,19 +14,19 @@
         "./styles/globals.css": "./styles/globals.css"
     },
     "peerDependencies": {
-        "react": "^19",
-        "react-dom": "^19"
+        "react": "catalog:react",
+        "react-dom": "catalog:react"
     },
     "dependencies": {
         "@base-ui/react": "1.4.1",
-        "@hookform/resolvers": "5.2.2",
+        "@hookform/resolvers": "catalog:zod",
         "class-variance-authority": "0.7.1",
         "clsx": "2.1.1",
         "cmdk": "1.1.1",
         "date-fns": "4.1.0",
         "embla-carousel-react": "8.6.0",
         "input-otp": "1.4.2",
-        "lucide-react": "1.14.0",
+        "lucide-react": "catalog:tooling",
         "next-themes": "0.4.6",
         "radix-ui": "1.4.3",
         "react-day-picker": "9.14.0",
@@ -36,14 +36,14 @@
         "sonner": "2.0.7",
         "tailwind-merge": "3.0.0",
         "vaul": "1.1.2",
-        "zod": "4.4.2"
+        "zod": "catalog:zod"
     },
     "devDependencies": {
         "@monsieurtis/tsconfig": "workspace:*",
-        "@tailwindcss/postcss": "4.0.0",
-        "@types/react": "19.0.0",
-        "@types/react-dom": "19.0.0",
-        "tailwindcss": "4.0.0",
+        "@tailwindcss/postcss": "catalog:tailwind",
+        "@types/react": "catalog:react",
+        "@types/react-dom": "catalog:react",
+        "tailwindcss": "catalog:tailwind",
         "tw-animate-css": "latest"
     }
 }
