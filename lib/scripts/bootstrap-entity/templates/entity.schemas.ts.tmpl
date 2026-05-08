@@ -1,0 +1,9 @@
+import { z } from "zod";
+
+export const {{Entity}}Create = z.object({
+    // TODO: declare creatable fields here (mirrors Mutable<{{Entity}}>)
+});
+
+export const {{Entity}}Filters = z.object({
+    search: z.string().min(1),
+});

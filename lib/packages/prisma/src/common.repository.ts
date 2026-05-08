@@ -1,4 +1,11 @@
-import { Entity, Mutable, Page, PageQuery, Query } from "@monsieurtis/core";
+import {
+    CommonRepository,
+    Entity,
+    Mutable,
+    Page,
+    PageQuery,
+    Query,
+} from "@monsieurtis/core";
 
 export interface PrismaDelegate<TRow extends Entity = Entity> {
     findUnique(args: {
@@ -20,10 +27,7 @@ export interface PrismaDelegate<TRow extends Entity = Entity> {
         select?: { id: true };
     }): Promise<Array<Pick<TRow, "id">>>;
     update(args: { where: { id: string }; data: any }): Promise<TRow>;
-    updateMany(args: {
-        where: any;
-        data: any;
-    }): Promise<{ count: number }>;
+    updateMany(args: { where: any; data: any }): Promise<{ count: number }>;
     delete(args: { where: { id: string } }): Promise<TRow>;
     deleteMany(args: { where: any }): Promise<{ count: number }>;
 }
@@ -47,7 +51,7 @@ export abstract class PrismaCommonRepository<
     TCreate extends object = Mutable<TEntity>,
     TUpdate extends object = Partial<Mutable<TEntity>>,
     TOrderBy extends object = object,
-> {
+> implements CommonRepository<TEntity, TFilters, TRelations, TCreate, TUpdate> {
     protected abstract readonly delegate: PrismaDelegate<TRow>;
     protected abstract mapBase(row: TRow): TEntity;
     protected readonly relations: {
@@ -66,9 +70,7 @@ export abstract class PrismaCommonRepository<
         );
     }
 
-    private buildWhere(
-        filterList?: Partial<TFilters>[],
-    ): TWhere | undefined {
+    private buildWhere(filterList?: Partial<TFilters>[]): TWhere | undefined {
         if (!filterList || filterList.length === 0) return undefined;
         const branches = filterList
             .map((values) => this.buildWhereOne(values))

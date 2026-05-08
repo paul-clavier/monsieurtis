@@ -31,3 +31,10 @@ export interface PageQuery<TFilter, TSort, TInclude> extends Query<
 > {
     pagination: PageQueryParams;
 }
+
+// Wire shape produced by the REST list-route schema before the controller narrows
+// `TSort`/`TInclude` per entity and dispatches to `Query` (no pagination) vs
+// `PageQuery` (full pagination).
+export type RawListQuery<TFilter> = Query<TFilter, string, string> & {
+    pagination?: Partial<PageQueryParams>;
+};

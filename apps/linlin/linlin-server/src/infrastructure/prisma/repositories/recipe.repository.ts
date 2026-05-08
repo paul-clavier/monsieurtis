@@ -11,6 +11,7 @@ import { PrismaCommonRepository } from "@monsieurtis/prisma";
 import { Injectable } from "@nestjs/common";
 import { SetupWithIngredientsAndSubSetupsRow } from "./setup.repository";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type RecipeRow = Prisma.RecipeGetPayload<{}>;
 
 @Injectable()

@@ -5,3 +5,9 @@ export type Prettify<T> = {
 } & {};
 
 export type FromArray<T> = T extends (infer K)[] ? K : never;
+
+export type AssertEquals<A, B> = [A] extends [B]
+    ? [B] extends [A]
+        ? true
+        : never
+    : never;

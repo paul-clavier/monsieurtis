@@ -22,15 +22,19 @@
     },
     "dependencies": {
         "@monsieurtis/core": "workspace:*",
+        "@monsieurtis/nest-rest-crud": "workspace:*",
         "@monsieurtis/prisma": "workspace:*",
         "@nestjs/common": "^11.0.1",
         "@nestjs/core": "^11.0.1",
         "@nestjs/platform-express": "^11.0.1",
+        "@nestjs/swagger": "^11.0.0",
         "dotenv": "^17.4.2",
+        "nestjs-zod": "^4.0.0",
         "@prisma/client": "6.7.0",
         "@prisma/instrumentation": "6.7.0",
         "reflect-metadata": "^0.2.2",
-        "rxjs": "^7.8.1"
+        "rxjs": "^7.8.1",
+        "zod": "^3.23.0"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.2.0",

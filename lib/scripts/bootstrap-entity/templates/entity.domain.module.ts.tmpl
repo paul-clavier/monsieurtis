@@ -1,0 +1,10 @@
+import { RepositoriesModule } from "@/infrastructure/prisma/prisma.module";
+import { Module } from "@nestjs/common";
+import { {{Entity}}UseCases } from "./{{entity}}.use-cases";
+
+@Module({
+    imports: [RepositoriesModule],
+    providers: [{{Entity}}UseCases],
+    exports: [{{Entity}}UseCases],
+})
+export class {{Entity}}DomainModule {}

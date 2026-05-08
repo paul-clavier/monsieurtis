@@ -1,0 +1,7 @@
+{
+    "extends": "@monsieurtis/tsconfig/server.json",
+    "compilerOptions": {
+        "noEmit": true
+    },
+    "include": ["src"]
+}
