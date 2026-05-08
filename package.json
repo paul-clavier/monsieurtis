@@ -3,6 +3,7 @@
     "private": true,
     "workspaces": [
         "apps/harley",
+        "apps/linlin/interfaces",
         "apps/linlin/linlin-server",
         "apps/linlin/linlin-client",
         "lib/tsconfig",

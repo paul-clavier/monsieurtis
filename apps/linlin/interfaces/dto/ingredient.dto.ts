@@ -9,4 +9,5 @@ export const IngredientFilters = z.object({
     search: z.string().min(1),
 });
 
-export type IngredientCreateDTO = z.infer(IngredientCreate)
+export type IngredientCreateDTO = z.infer<typeof IngredientCreate>;
+export type IngredientFiltersParams = z.infer<typeof IngredientFilters>;

@@ -13,6 +13,7 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@monsieurtis/core": "workspace:*",
         "@monsieurtis/ui": "workspace:*",
         "@tailwindcss/vite": "^4.1.18",
         "@tanstack/react-devtools": "latest",
@@ -24,7 +25,8 @@
         "lucide-react": "^0.545.0",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
-        "tailwindcss": "^4.1.18"
+        "tailwindcss": "^4.1.18",
+        "zod": "^3.23.0"
     },
     "devDependencies": {
         "@monsieurtis/tsconfig": "workspace:*",
