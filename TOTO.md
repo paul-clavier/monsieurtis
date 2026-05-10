@@ -1,0 +1,7 @@
+- Add Civo
+- Lecture whitelist IP Civo
+- Lecture clouflared et lien
+- CI/CD infra
+- Google SSO
+- Keycloack et lecture Stef Robert + Lecture Claude (et sur les service account k8s)
+- CI/CD Linlin
