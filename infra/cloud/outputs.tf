@@ -1,0 +1,26 @@
+output "kubeconfig" {
+  description = "Kubeconfig for the cluster. Feed into the identity module or merge into ~/.kube/config."
+  value       = civo_kubernetes_cluster.main.kubeconfig
+  sensitive   = true
+}
+
+output "cluster_id" {
+  description = "Civo cluster ID. Useful for CLI commands and CI/CD lookups."
+  value       = civo_kubernetes_cluster.main.id
+}
+
+output "firewall_id" {
+  description = "Civo firewall ID. The CI/CD pipeline uses this to refresh the kube_api rule when `kube_api_allowed_cidr` changes."
+  value       = civo_firewall.cluster.id
+}
+
+output "tunnel_id" {
+  description = "Cloudflare tunnel ID. Subdomain CNAMEs already point at <tunnel_id>.cfargotunnel.com."
+  value       = cloudflare_zero_trust_tunnel_cloudflared.mrtis.id
+}
+
+resource "local_sensitive_file" "kubeconfig" {
+  content         = civo_kubernetes_cluster.main.kubeconfig
+  filename        = "${path.module}/kubeconfig"
+  file_permission = "0600"
+}

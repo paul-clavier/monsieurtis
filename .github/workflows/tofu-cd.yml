@@ -1,0 +1,80 @@
+name: tofu-cd
+
+on:
+    push:
+        branches:
+            - infra_cloud_main
+            - infra_identity_main
+
+permissions:
+    contents: read
+
+jobs:
+    apply:
+        runs-on: ubuntu-latest
+        environment: production
+        # One apply per branch/project at a time; never cancel a running apply.
+        concurrency:
+            group: tofu-apply-${{ github.ref_name }}
+            cancel-in-progress: false
+        env:
+            PROJECT: ${{ github.ref_name == 'infra_cloud_main' && 'cloud' || 'identity' }}
+            TF_VAR_domain: monsieurtis.com
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: opentofu/setup-opentofu@v1
+              with:
+                  tofu_version: 1.9.1
+                  tofu_wrapper: false
+
+            # Shared by both roots: state backend (AWS_*) + civo (cluster
+            # provisioning for cloud, kubeconfig lookup for identity).
+            - name: Load shared secrets
+              uses: 1password/load-secrets-action@v2
+              with:
+                  export-env: true
+              env:
+                  OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+                  AWS_ACCESS_KEY_ID: op://MonsieurTis/civo.object-store.tofu.AWS_ACCESS_KEY_ID/password
+                  AWS_SECRET_ACCESS_KEY: op://MonsieurTis/civo.object-store.tofu.AWS_SECRET_ACCESS_KEY/password
+                  CIVO_TOKEN: op://MonsieurTis/civo.TOKEN/password
+
+            - name: Load cloud secrets
+              if: env.PROJECT == 'cloud'
+              uses: 1password/load-secrets-action@v2
+              with:
+                  export-env: true
+              env:
+                  OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+                  # TODO: confirm these reference paths in 1Password.
+                  TF_VAR_cloudflare_api_token: op://MonsieurTis/cloudflare.TOKEN/password
+                  TF_VAR_cloudflare_account_id: op://MonsieurTis/cloudflare.ACCOUNT_ID/password
+                  TF_VAR_cloudflare_zone_id: op://MonsieurTis/cloudflare.ZONE_ID/password
+
+            - name: Load identity secrets
+              if: env.PROJECT == 'identity'
+              uses: 1password/load-secrets-action@v2
+              with:
+                  export-env: true
+              env:
+                  OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+                  # TODO: confirm these reference paths in 1Password.
+                  TF_VAR_postgres_password: op://MonsieurTis/identity.POSTGRES_PASSWORD/password
+                  TF_VAR_kratos_cookie_secret: op://MonsieurTis/identity.KRATOS_COOKIE_SECRET/password
+                  TF_VAR_kratos_cipher_secret: op://MonsieurTis/identity.KRATOS_CIPHER_SECRET/password
+                  TF_VAR_hydra_system_secret: op://MonsieurTis/identity.HYDRA_SYSTEM_SECRET/password
+                  TF_VAR_google_oauth_client_id: op://MonsieurTis/identity.GOOGLE_OAUTH_CLIENT_ID/password
+                  TF_VAR_google_oauth_client_secret: op://MonsieurTis/identity.GOOGLE_OAUTH_CLIENT_SECRET/password
+
+            - name: tofu init
+              working-directory: infra/${{ env.PROJECT }}
+              run: tofu init -input=false -lockfile=readonly
+
+            - name: tofu plan
+              working-directory: infra/${{ env.PROJECT }}
+              run: tofu plan -input=false -out=tfplan
+
+            - name: tofu apply
+              working-directory: infra/${{ env.PROJECT }}
+              run: tofu apply -input=false tfplan

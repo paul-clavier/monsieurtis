@@ -1,0 +1,211 @@
+name: tofu-ci
+
+on:
+    pull_request:
+        branches:
+            - main
+        paths:
+            - infra/cloud/**
+            - infra/identity/**
+            - .github/workflows/tofu-ci.yml
+
+permissions:
+    contents: read
+
+concurrency:
+    group: tofu-ci-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    detect-changes:
+        runs-on: ubuntu-latest
+        outputs:
+            projects: ${{ steps.compute.outputs.projects }}
+        steps:
+            - uses: actions/checkout@v4
+            - id: filter
+              uses: dorny/paths-filter@v3
+              with:
+                  filters: |
+                      cloud:
+                        - 'infra/cloud/**'
+                      identity:
+                        - 'infra/identity/**'
+            - id: compute
+              run: |
+                  projects='[]'
+                  if [ "${{ steps.filter.outputs.cloud }}" = "true" ]; then
+                    projects=$(jq -c '. + ["cloud"]' <<<"$projects")
+                  fi
+                  if [ "${{ steps.filter.outputs.identity }}" = "true" ]; then
+                    projects=$(jq -c '. + ["identity"]' <<<"$projects")
+                  fi
+                  echo "projects=$projects" >> "$GITHUB_OUTPUT"
+
+    lint:
+        needs: detect-changes
+        if: needs.detect-changes.outputs.projects != '[]'
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                project: ${{ fromJson(needs.detect-changes.outputs.projects) }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: terraform-linters/setup-tflint@v6
+              with:
+                  tflint_version: latest
+            - name: tflint --init
+              working-directory: infra/${{ matrix.project }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: tflint --init
+            - name: tflint
+              working-directory: infra/${{ matrix.project }}
+              run: tflint --recursive --format=compact
+
+    validate:
+        needs: detect-changes
+        if: needs.detect-changes.outputs.projects != '[]'
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                project: ${{ fromJson(needs.detect-changes.outputs.projects) }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: opentofu/setup-opentofu@v1
+              with:
+                  tofu_version: 1.9.1
+                  tofu_wrapper: false
+            - name: tofu fmt
+              working-directory: infra/${{ matrix.project }}
+              run: tofu fmt -check -recursive -diff
+            - name: tofu init
+              working-directory: infra/${{ matrix.project }}
+              run: tofu init -backend=false -input=false -lockfile=readonly
+            - name: tofu validate
+              working-directory: infra/${{ matrix.project }}
+              run: tofu validate -no-color
+
+    security:
+        needs: detect-changes
+        if: needs.detect-changes.outputs.projects != '[]'
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                project: ${{ fromJson(needs.detect-changes.outputs.projects) }}
+        steps:
+            - uses: actions/checkout@v4
+            - name: trivy config scan
+              uses: aquasecurity/trivy-action@0.36.0
+              with:
+                  scan-type: config
+                  scan-ref: infra/${{ matrix.project }}
+                  exit-code: "1"
+                  severity: HIGH,CRITICAL
+                  format: table
+
+    plan:
+        needs: detect-changes
+        # Skip on fork PRs: plan needs secrets, which must never reach a fork.
+        if: >-
+            needs.detect-changes.outputs.projects != '[]' &&
+            github.event.pull_request.head.repo.full_name == github.repository
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            pull-requests: write
+        strategy:
+            fail-fast: false
+            matrix:
+                project: ${{ fromJson(needs.detect-changes.outputs.projects) }}
+        env:
+            TF_VAR_domain: monsieurtis.com
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: opentofu/setup-opentofu@v1
+              with:
+                  tofu_version: 1.9.1
+                  tofu_wrapper: false
+
+            # Only OP_SERVICE_ACCOUNT_TOKEN lives in GitHub; the rest resolve
+            # from 1Password. Loads are split per project so a cloud plan never
+            # pulls identity secrets (and vice-versa).
+            - name: Load shared secrets
+              uses: 1password/load-secrets-action@v2
+              with:
+                  export-env: true
+              env:
+                  OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+                  AWS_ACCESS_KEY_ID: op://MonsieurTis/civo.object-store.tofu.AWS_ACCESS_KEY_ID/password
+                  AWS_SECRET_ACCESS_KEY: op://MonsieurTis/civo.object-store.tofu.AWS_SECRET_ACCESS_KEY/password
+                  CIVO_TOKEN: op://MonsieurTis/civo.TOKEN/password
+
+            - name: Load cloud secrets
+              if: matrix.project == 'cloud'
+              uses: 1password/load-secrets-action@v2
+              with:
+                  export-env: true
+              env:
+                  OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+                  # TODO: confirm these reference paths in 1Password.
+                  TF_VAR_cloudflare_api_token: op://MonsieurTis/cloudflare.TOKEN/password
+                  TF_VAR_cloudflare_account_id: op://MonsieurTis/cloudflare.ACCOUNT_ID/password
+                  TF_VAR_cloudflare_zone_id: op://MonsieurTis/cloudflare.ZONE_ID/password
+
+            - name: Load identity secrets
+              if: matrix.project == 'identity'
+              uses: 1password/load-secrets-action@v2
+              with:
+                  export-env: true
+              env:
+                  OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+                  # TODO: confirm these reference paths in 1Password.
+                  TF_VAR_postgres_password: op://MonsieurTis/identity.POSTGRES_PASSWORD/password
+                  TF_VAR_kratos_cookie_secret: op://MonsieurTis/identity.KRATOS_COOKIE_SECRET/password
+                  TF_VAR_kratos_cipher_secret: op://MonsieurTis/identity.KRATOS_CIPHER_SECRET/password
+                  TF_VAR_hydra_system_secret: op://MonsieurTis/identity.HYDRA_SYSTEM_SECRET/password
+                  TF_VAR_google_oauth_client_id: op://MonsieurTis/identity.GOOGLE_OAUTH_CLIENT_ID/password
+                  TF_VAR_google_oauth_client_secret: op://MonsieurTis/identity.GOOGLE_OAUTH_CLIENT_SECRET/password
+
+            - name: tofu init
+              working-directory: infra/${{ matrix.project }}
+              run: tofu init -input=false -lockfile=readonly
+
+            - name: tofu plan
+              id: plan
+              working-directory: infra/${{ matrix.project }}
+              continue-on-error: true
+              run: |
+                  set -o pipefail
+                  tofu plan -no-color -input=false -out=tfplan 2>&1 | tee plan.txt
+
+            # Sensitive values are redacted by OpenTofu as "(sensitive value)"
+            # because every secret var/output is marked `sensitive = true`.
+            - name: Build comment body
+              working-directory: infra/${{ matrix.project }}
+              run: |
+                  {
+                    echo "### tofu plan — \`${{ matrix.project }}\` (\`${{ steps.plan.outcome }}\`)"
+                    echo ""
+                    echo "<details><summary>Plan output</summary>"
+                    echo ""
+                    echo '```hcl'
+                    head -c 60000 plan.txt
+                    echo ""
+                    echo '```'
+                    echo "</details>"
+                  } > comment.md
+
+            - name: Comment plan on PR
+              uses: marocchino/sticky-pull-request-comment@v2
+              with:
+                  header: tofu-plan-${{ matrix.project }}
+                  path: infra/${{ matrix.project }}/comment.md
+
+            - name: Fail if plan errored
+              if: steps.plan.outcome == 'failure'
+              run: exit 1
