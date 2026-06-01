@@ -8,5 +8,6 @@ terraform {
     helm       = { source = "hashicorp/helm", version = "~> 2.16" }
     local      = { source = "hashicorp/local", version = "~> 2.5" }
     random     = { source = "hashicorp/random", version = "~> 3.6" }
+    tailscale  = { source = "tailscale/tailscale", version = "~> 0.17" }
   }
 }

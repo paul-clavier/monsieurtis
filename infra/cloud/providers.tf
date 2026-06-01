@@ -6,6 +6,10 @@ provider "cloudflare" {
   api_token = var.cloudflare_api_token
 }
 
+# Reads TAILSCALE_OAUTH_CLIENT_ID / TAILSCALE_OAUTH_CLIENT_SECRET / TAILSCALE_TAILNET
+# from the environment.
+provider "tailscale" {}
+
 locals {
   kubeconfig = yamldecode(civo_kubernetes_cluster.main.kubeconfig)
   cluster    = local.kubeconfig.clusters[0].cluster

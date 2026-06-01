@@ -25,14 +25,23 @@ variable "node_count" {
   default     = 2
 }
 
-variable "kube_api_allowed_cidr" {
-  description = "CIDR allowed to reach the kube API on port 6443. Required (no default) so every environment must consciously declare who can reach the API. Set a single admin/Tailscale /32 — never a /0, which would expose the API to the whole internet."
+################################
+#          NETWORK.            #
+################################
+# The Tailscale exit node VPS that fronts the kube API: its public /32 is the
+# only address `civo_firewall.cluster` lets past. Admin access from a laptop
+# rides the tailnet (Tailscale SSH; no public port 22 on the VPS), and
+# `kubectl` works only while the exit node is selected on the client side
+# (`tailscale up --exit-node=mrtis-exit`).
+variable "exit_node_size" {
+  description = "Civo instance size for the Tailscale exit node. Smallest g4 works — Tailscale uses ~50 MB RAM idle."
   type        = string
+  default     = "g4s.xsmall"
+}
 
-  validation {
-    condition     = can(regex("^([0-9]{1,3}\\.){3}[0-9]{1,3}/(3[0-2]|[12]?[0-9])$", var.kube_api_allowed_cidr)) && tonumber(split("/", var.kube_api_allowed_cidr)[1]) > 0
-    error_message = "kube_api_allowed_cidr must be a valid IPv4 CIDR with a non-zero prefix (e.g. 77.133.250.78/32). A /0 mask exposes the kube API to the entire internet."
-  }
+variable "admin_ssh_public_key" {
+  description = "SSH public key authorized on the exit node. Tailscale SSH is the primary access path; this is a break-glass fallback for the Civo console."
+  type        = string
 }
 
 ################################

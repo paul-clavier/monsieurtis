@@ -2,7 +2,7 @@
 
 Provisions the Civo-hosted k3s cluster, the Cloudflare tunnel that fronts it,
 and the in-cluster platform (Traefik, cert-manager, cloudflared, ratelimit
-middleware). See [`CIVO.md`](../../CIVO.md) for the full design rationale.
+middleware).
 
 Managed with [OpenTofu](https://opentofu.org/) (Terraform-compatible fork).
 Install via `brew install opentofu` and use the `tofu` CLI.

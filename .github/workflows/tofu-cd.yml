@@ -19,7 +19,26 @@ jobs:
             cancel-in-progress: false
         env:
             PROJECT: ${{ github.ref_name == 'infra_cloud_main' && 'cloud' || 'identity' }}
+            # Shared: state backend + civo provider, used by every root.
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            CIVO_TOKEN: ${{ secrets.CIVO_TOKEN }}
             TF_VAR_domain: monsieurtis.com
+            # Project-specific. Conditionals keep one project's secrets
+            # out of the other's runner environment.
+            TF_VAR_cloudflare_api_token: ${{ github.ref_name == 'infra_cloud_main' && secrets.CLOUDFLARE_API_TOKEN || '' }}
+            TF_VAR_cloudflare_account_id: ${{ github.ref_name == 'infra_cloud_main' && secrets.CLOUDFLARE_ACCOUNT_ID || '' }}
+            TF_VAR_cloudflare_zone_id: ${{ github.ref_name == 'infra_cloud_main' && secrets.CLOUDFLARE_ZONE_ID || '' }}
+            TF_VAR_admin_ssh_public_key: ${{ github.ref_name == 'infra_cloud_main' && secrets.CIVO_VPS_SSH_PUBLIC_KEY || '' }}
+            TAILSCALE_OAUTH_CLIENT_ID: ${{ github.ref_name == 'infra_cloud_main' && secrets.TAILSCALE_OAUTH_CLIENT_ID || '' }}
+            TAILSCALE_OAUTH_CLIENT_SECRET: ${{ github.ref_name == 'infra_cloud_main' && secrets.TAILSCALE_OAUTH_CLIENT_SECRET || '' }}
+            TAILSCALE_TAILNET: plclavier@gmail.com
+            TF_VAR_postgres_password: ${{ github.ref_name == 'infra_identity_main' && secrets.ORY_POSTGRES_PASSWORD || '' }}
+            TF_VAR_kratos_cookie_secret: ${{ github.ref_name == 'infra_identity_main' && secrets.KRATOS_COOKIE_SECRET || '' }}
+            TF_VAR_kratos_cipher_secret: ${{ github.ref_name == 'infra_identity_main' && secrets.KRATOS_CIPHER_SECRET || '' }}
+            TF_VAR_hydra_system_secret: ${{ github.ref_name == 'infra_identity_main' && secrets.HYDRA_SYSTEM_SECRET || '' }}
+            TF_VAR_google_oauth_client_id: ${{ github.ref_name == 'infra_identity_main' && secrets.GOOGLE_OAUTH_CLIENT_ID || '' }}
+            TF_VAR_google_oauth_client_secret: ${{ github.ref_name == 'infra_identity_main' && secrets.GOOGLE_OAUTH_CLIENT_SECRET || '' }}
         steps:
             - uses: actions/checkout@v4
 
@@ -27,45 +46,6 @@ jobs:
               with:
                   tofu_version: 1.9.1
                   tofu_wrapper: false
-
-            # Shared by both roots: state backend (AWS_*) + civo (cluster
-            # provisioning for cloud, kubeconfig lookup for identity).
-            - name: Load shared secrets
-              uses: 1password/load-secrets-action@v2
-              with:
-                  export-env: true
-              env:
-                  OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-                  AWS_ACCESS_KEY_ID: op://MonsieurTis/civo.object-store.tofu.AWS_ACCESS_KEY_ID/password
-                  AWS_SECRET_ACCESS_KEY: op://MonsieurTis/civo.object-store.tofu.AWS_SECRET_ACCESS_KEY/password
-                  CIVO_TOKEN: op://MonsieurTis/civo.TOKEN/password
-
-            - name: Load cloud secrets
-              if: env.PROJECT == 'cloud'
-              uses: 1password/load-secrets-action@v2
-              with:
-                  export-env: true
-              env:
-                  OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-                  # TODO: confirm these reference paths in 1Password.
-                  TF_VAR_cloudflare_api_token: op://MonsieurTis/cloudflare.TOKEN/password
-                  TF_VAR_cloudflare_account_id: op://MonsieurTis/cloudflare.ACCOUNT_ID/password
-                  TF_VAR_cloudflare_zone_id: op://MonsieurTis/cloudflare.ZONE_ID/password
-
-            - name: Load identity secrets
-              if: env.PROJECT == 'identity'
-              uses: 1password/load-secrets-action@v2
-              with:
-                  export-env: true
-              env:
-                  OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-                  # TODO: confirm these reference paths in 1Password.
-                  TF_VAR_postgres_password: op://MonsieurTis/identity.POSTGRES_PASSWORD/password
-                  TF_VAR_kratos_cookie_secret: op://MonsieurTis/identity.KRATOS_COOKIE_SECRET/password
-                  TF_VAR_kratos_cipher_secret: op://MonsieurTis/identity.KRATOS_CIPHER_SECRET/password
-                  TF_VAR_hydra_system_secret: op://MonsieurTis/identity.HYDRA_SYSTEM_SECRET/password
-                  TF_VAR_google_oauth_client_id: op://MonsieurTis/identity.GOOGLE_OAUTH_CLIENT_ID/password
-                  TF_VAR_google_oauth_client_secret: op://MonsieurTis/identity.GOOGLE_OAUTH_CLIENT_SECRET/password
 
             - name: tofu init
               working-directory: infra/${{ env.PROJECT }}

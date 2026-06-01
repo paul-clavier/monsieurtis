@@ -17,7 +17,7 @@ resource "civo_firewall_rule" "kube_api" {
   protocol    = "tcp"
   start_port  = "6443"
   end_port    = "6443"
-  cidr        = [var.kube_api_allowed_cidr]
+  cidr        = ["${civo_instance.exit_node.public_ip}/32"]
   direction   = "ingress"
   action      = "allow"
   label       = "k8s-api"
