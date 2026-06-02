@@ -1,5 +1,5 @@
 # Tailscale exit node — the only address the kube API firewall accepts.
-# See `civo_firewall_rule.kube_api` in cluster.tf for the pinning.
+# See the `k8s-api` ingress rule on `civo_firewall.cluster` in cluster.tf for the pinning.
 
 ################################
 #       TAILNET CONFIG.        #
@@ -57,17 +57,14 @@ resource "civo_ssh_key" "admin" {
 resource "civo_firewall" "exit_node" {
   name                 = "${var.cluster_name}-exit-fw"
   create_default_rules = false
-}
 
-resource "civo_firewall_rule" "exit_node_tailscale" {
-  firewall_id = civo_firewall.exit_node.id
-  protocol    = "udp"
-  start_port  = "41641"
-  end_port    = "41641"
-  cidr        = ["0.0.0.0/0"]
-  direction   = "ingress"
-  action      = "allow"
-  label       = "tailscale"
+  ingress_rule {
+    label      = "tailscale"
+    protocol   = "udp"
+    port_range = "41641"
+    cidr       = ["0.0.0.0/0"]
+    action     = "allow"
+  }
 }
 
 data "civo_disk_image" "debian" {
