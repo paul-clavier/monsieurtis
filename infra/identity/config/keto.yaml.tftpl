@@ -1,0 +1,33 @@
+# Keto configuration.
+# DSN comes from env (see keto.tf).
+#
+# Namespaces define the universe of object types we can write tuples about:
+#   - app          : "this user can access app X"
+#   - team         : "this user is a member of team X"
+#   - crocus-admin : "this user can administer the SSO console"
+#
+# Future namespaces (e.g. per-app resources) extend this list — keep them
+# additive so existing tuples remain valid.
+
+version: v0.6.0-alpha.0
+
+serve:
+    read:
+        host: 0.0.0.0
+        port: 4466
+    write:
+        host: 0.0.0.0
+        port: 4467
+    metrics:
+        host: 0.0.0.0
+        port: 4468
+
+namespaces:
+%{ for ns in namespaces }
+    - name: ${ns}
+%{ endfor }
+
+log:
+    level: info
+    format: json
+    leak_sensitive_values: false

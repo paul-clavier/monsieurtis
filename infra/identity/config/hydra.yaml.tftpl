@@ -1,0 +1,58 @@
+# Hydra configuration, rendered by Terraform.
+# DSN and SECRETS_SYSTEM come from env vars (see hydra.tf).
+
+serve:
+    public:
+        port: 4444
+        cors:
+            enabled: true
+            allowed_origins: ["*"]
+            allowed_methods: [GET, POST, PUT, DELETE]
+            allowed_headers: [Authorization, Content-Type]
+    admin:
+        port: 4445
+        cors:
+            enabled: false
+
+urls:
+    # Hydra delegates login + consent to Crocus, served on auth.<domain>.
+    login:   https://${auth_host}/login
+    consent: https://${auth_host}/consent
+    logout:  https://${auth_host}/logout
+    error:   https://${auth_host}/oauth-error
+
+    self:
+        issuer: https://${id_host}
+        public: ${public_url}
+
+oidc:
+    # Subject identifier — `public` means stable `sub` = identity ID.
+    # Switch to `pairwise` if we ever want per-client opaque subjects.
+    subject_identifiers:
+        supported_types: [public]
+        pairwise:
+            salt: ""
+
+oauth2:
+    expose_internal_errors: false
+    pkce:
+        # PKCE is mandatory for public clients (SPAs, mobile). Always-on for
+        # confidential clients too — costs nothing.
+        enforced: false
+        enforced_for_public_clients: true
+
+strategies:
+    access_token: jwt   # JWTs everywhere — apps validate offline via JWKS.
+    scope: exact
+
+ttl:
+    access_token:  1h
+    refresh_token: 720h
+    id_token:      1h
+    auth_code:     10m
+    login_consent_request: 30m
+
+log:
+    level: info
+    format: json
+    leak_sensitive_values: false

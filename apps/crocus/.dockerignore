@@ -1,0 +1,9 @@
+**/node_modules
+**/.tanstack
+**/dist
+**/.output
+**/.vite
+**/.DS_Store
+**/*.tsbuildinfo
+.git
+.github

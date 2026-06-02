@@ -1,0 +1,48 @@
+{
+    "name": "crocus",
+    "private": true,
+    "type": "module",
+    "imports": {
+        "#/*": "./src/*"
+    },
+    "scripts": {
+        "dev": "vite dev --port 3001",
+        "build": "vite build",
+        "preview": "vite preview",
+        "test": "vitest run",
+        "typecheck": "tsc --noEmit",
+        "lint": "eslint",
+        "format": "prettier --write . && eslint --fix",
+        "check": "prettier --check ."
+    },
+    "dependencies": {
+        "@monsieurtis/ory": "workspace:*",
+        "@monsieurtis/ui": "workspace:*",
+        "@tailwindcss/vite": "catalog:tailwind",
+        "@tanstack/react-router": "catalog:tanstack",
+        "@tanstack/react-router-ssr-query": "catalog:tanstack",
+        "@tanstack/react-start": "catalog:tanstack",
+        "@tanstack/router-plugin": "catalog:tanstack",
+        "lucide-react": "catalog:tooling",
+        "react": "catalog:react",
+        "react-dom": "catalog:react",
+        "tailwindcss": "catalog:tailwind",
+        "zod": "catalog:zod"
+    },
+    "devDependencies": {
+        "@monsieurtis/tsconfig": "workspace:*",
+        "@tailwindcss/typography": "catalog:tailwind",
+        "@tanstack/devtools-vite": "catalog:tanstack",
+        "@tanstack/eslint-config": "catalog:tanstack",
+        "@tanstack/react-devtools": "catalog:tanstack",
+        "@tanstack/react-router-devtools": "catalog:tanstack",
+        "@types/node": "catalog:tooling",
+        "@types/react": "catalog:react",
+        "@types/react-dom": "catalog:react",
+        "@vitejs/plugin-react": "catalog:build",
+        "eslint": "catalog:tooling",
+        "prettier": "catalog:tooling",
+        "vite": "catalog:build",
+        "vitest": "catalog:build"
+    }
+}
