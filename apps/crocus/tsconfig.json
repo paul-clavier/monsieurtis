@@ -1,0 +1,18 @@
+{
+    "extends": "@monsieurtis/tsconfig/client.json",
+    "compilerOptions": {
+        "noEmit": true,
+        "allowImportingTsExtensions": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true,
+        "noUncheckedSideEffectImports": true,
+        "types": ["vite/client"],
+        "baseUrl": ".",
+        "paths": {
+            "#/*": ["./src/*"],
+            "@/*": ["./src/*"]
+        }
+    },
+    "include": ["**/*.ts", "**/*.tsx", "eslint.config.js", "prettier.config.js", "vite.config.ts"]
+}
