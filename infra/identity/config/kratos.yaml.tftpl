@@ -1,0 +1,106 @@
+# Kratos configuration, rendered by Terraform into a Secret consumed by the
+# Helm chart. The DSN and secrets come from env vars (see kratos.tf).
+
+serve:
+    public:
+        base_url: ${kratos_public_url}
+        cors:
+            enabled: true
+            allowed_origins:
+                - https://${auth_host}
+            allowed_methods: [GET, POST, PUT, PATCH, DELETE]
+            allowed_headers: [Authorization, Cookie, Content-Type]
+            exposed_headers: [Content-Type, Set-Cookie]
+            allow_credentials: true
+    admin:
+        base_url: http://kratos-admin/
+
+# Crocus owns every UI surface.
+selfservice:
+    default_browser_return_url: https://${auth_host}/
+    allowed_return_urls:
+        - https://${auth_host}
+
+    methods:
+        password:
+            enabled: true
+            config:
+                min_password_length: 10
+                identifier_similarity_check_enabled: true
+        oidc:
+            enabled: true
+            config:
+                providers:
+                    - id: google
+                      provider: google
+                      mapper_url: "base64://${google_jsonnet_b64}"
+                      # client_id / client_secret are injected via env vars
+                      # (SELFSERVICE_METHODS_OIDC_CONFIG_PROVIDERS_0_CLIENT_ID, _SECRET)
+                      # — see kratos.tf.
+                      client_id: ""
+                      client_secret: ""
+                      scope: [openid, email, profile]
+        link:
+            enabled: true
+        code:
+            enabled: true
+
+    flows:
+        login:
+            ui_url: https://${auth_host}/login
+            lifespan: 10m
+        registration:
+            ui_url: https://${auth_host}/registration
+            lifespan: 10m
+            after:
+                password:
+                    hooks:
+                        - hook: session
+                oidc:
+                    hooks:
+                        - hook: session
+        recovery:
+            enabled: true
+            ui_url: https://${auth_host}/recovery
+            use: code
+        verification:
+            enabled: true
+            ui_url: https://${auth_host}/verification
+            use: code
+            after:
+                default_browser_return_url: https://${auth_host}/
+        error:
+            ui_url: https://${auth_host}/error
+        settings:
+            ui_url: https://${auth_host}/settings
+            privileged_session_max_age: 15m
+
+session:
+    lifespan: 720h
+    cookie:
+        domain: ${auth_host}
+        same_site: Lax
+        persistent: true
+
+identity:
+    default_schema_id: default
+    schemas:
+        - id: default
+          url: file:///etc/config/identity-schemas/identity.schema.json
+
+courier:
+    smtp:
+        from_address: ${smtp_from_address}
+        from_name: MonsieurTis Identity
+        # connection_uri comes from COURIER_SMTP_CONNECTION_URI env var
+
+log:
+    level: info
+    format: json
+    leak_sensitive_values: false
+
+# Used by Crocus's consent flow when looking up clients in Hydra. Kratos itself
+# doesn't need this — but the chart accepts an `oauth2_provider` block to drive
+# the post-login redirect dance when a Hydra `login_challenge` arrives.
+oauth2_provider:
+    url: ${hydra_admin_url}
