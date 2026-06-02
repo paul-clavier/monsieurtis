@@ -1,5 +1,7 @@
 # Tailscale exit node — the only address the kube API firewall accepts.
 # See the `k8s-api` ingress rule on `civo_firewall.cluster` in cluster.tf for the pinning.
+# The tailnet ACL itself lives in `infra/bootstrap/tailscale.tf` so tag changes
+# can be applied by the operator before any CI run depends on them.
 
 ################################
 #       TAILNET CONFIG.        #
@@ -16,34 +18,6 @@ resource "tailscale_tailnet_key" "exit_node" {
   description   = "${var.cluster_name}-exit bootstrap key"
   tags          = ["tag:monsieurtis"]
   expiry        = 3600
-}
-
-# `autoApprovers.exitNode` means devices tagged `tag:monsieurtis` are usable
-# as exit nodes the moment they register — no admin console click-through.
-resource "tailscale_acl" "policy" {
-  # This repo is the source of truth for the tailnet ACL; opt into stomping
-  # any out-of-band edits made via the Tailscale admin console.
-  overwrite_existing_content = true
-
-  acl = jsonencode({
-    tagOwners = {
-      "tag:monsieurtis" = ["autogroup:admin"]
-    }
-    autoApprovers = {
-      exitNode = ["tag:monsieurtis"]
-    }
-    acls = [
-      { action = "accept", src = ["autogroup:member"], dst = ["*:*"] }
-    ]
-    ssh = [
-      {
-        action = "accept"
-        src    = ["autogroup:member"]
-        dst    = ["tag:monsieurtis"]
-        users  = ["autogroup:nonroot", "root"]
-      }
-    ]
-  })
 }
 
 ################################

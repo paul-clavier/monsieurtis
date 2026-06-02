@@ -1,19 +1,31 @@
-# `infra/bootstrap` — Tofu state backend
+# `infra/bootstrap` — Tofu state backend + tailnet ACL
 
 One-time, operator-run root that provisions the Civo Object Store bucket holding
-the state for every other root (`bootstrap/`, `cloud/`, `identity/`). It is **not**
-part of CI/CD.
+the state for every other root (`bootstrap/`, `cloud/`, `identity/`) **and** the
+tailnet ACL (tag definitions + access policy). It is **not** part of CI/CD.
 
-Solves the chicken-and-egg problem: it runs with local state first, then migrates
-its own state into the bucket it just created (self-hosted).
+Two reasons resources live here rather than in `cloud/`:
+
+- **State backend**: chicken-and-egg — needs to exist before any other root can
+  init against it.
+- **Tailnet ACL**: chicken-and-egg with CI — a CI run cannot mint a Tailscale
+  key for a tag the deployed ACL does not yet declare. Owning the ACL here
+  means the operator re-applies before pushing workflow changes that depend
+  on a new tag.
+
+Bootstrap runs with local state first, then migrates its own state into the
+bucket it just created (self-hosted).
 
 ## Run order
 
 ```bash
 cd infra/bootstrap
 
-# 1. First apply with LOCAL state. The civo provider reads CIVO_TOKEN from env.
+# 1. First apply with LOCAL state. Both providers read credentials from env.
 export CIVO_TOKEN=...
+export TAILSCALE_OAUTH_CLIENT_ID=...
+export TAILSCALE_OAUTH_CLIENT_SECRET=...
+export TAILSCALE_TAILNET=plclavier@gmail.com
 tofu init
 tofu apply
 

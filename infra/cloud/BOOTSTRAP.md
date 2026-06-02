@@ -121,11 +121,16 @@ infra/
 
 ### `infra/bootstrap/`
 
-State backend, applied once by an operator. Solves chicken-and-egg: creates the bucket with local state, then migrates its own state into the bucket it just made. Never touched by CI/CD.
+State backend **and** tailnet ACL, applied once by an operator. Two chicken-and-egg
+problems solved here: (a) the state bucket is created with local state and then
+migrates its own state into itself, and (b) the ACL must declare any tag a CI run
+will request *before* the workflow that requests it runs — owning the ACL here
+forces the order. Never touched by CI/CD.
 
 Key files:
 
 - [`main.tf`](infra/bootstrap/main.tf) — `civo_object_store` + `civo_object_store_credential`.
+- [`tailscale.tf`](infra/bootstrap/tailscale.tf) — `tailscale_acl` (tag owners, autoApprovers, ssh).
 - [`outputs.tf`](infra/bootstrap/outputs.tf) — exposes the AWS-style keys for the S3 backend in other roots.
 - [`backend.tf`](infra/bootstrap/backend.tf) — points the bootstrap root at itself once migrated.
 
@@ -142,7 +147,7 @@ The single Tofu root for everything that needs to be running for `monsieurtis.co
 | [`cluster.tf`](infra/cloud/cluster.tf)                   | `civo_firewall.cluster` (default-deny) + `civo_firewall_rule.kube_api` (pinned to the exit node's `/32`) + `civo_kubernetes_cluster.main` (k3s, cilium CNI).                                                                                                                                                 |
 | [`platform.tf`](infra/cloud/platform.tf)                 | Helm releases: Traefik (ClusterIP only), cert-manager (CRDs enabled), cloudflared (2 replicas, registers to the tunnel using its token). Shared `ratelimit` Traefik middleware.                                                                                                                              |
 | [`cloudflare.tf`](infra/cloud/cloudflare.tf)             | `cloudflare_zero_trust_tunnel_cloudflared` + catch-all ingress to Traefik + per-subdomain proxied CNAMEs in the zone.                                                                                                                                                                                        |
-| [`network.tf`](infra/cloud/network.tf)                   | **Operator-access path.** `tailscale_tailnet_key` (single-use, 1h, tagged `exit-node`), `tailscale_acl` with `autoApprovers.exitNode` (no manual approval), `civo_ssh_key`, `civo_firewall` (default-deny except UDP/41641 for Tailscale direct connections), `civo_instance` exit-node VPS with cloud-init. |
+| [`network.tf`](infra/cloud/network.tf)                   | **Operator-access path.** `tailscale_tailnet_key` (single-use, 1h, tagged `exit-node`), `civo_ssh_key`, `civo_firewall` (default-deny except UDP/41641 for Tailscale direct connections), `civo_instance` exit-node VPS with cloud-init. The tailnet ACL itself is in [`infra/bootstrap/tailscale.tf`](infra/bootstrap/tailscale.tf).                                          |
 | [`cloud-init.sh.tftpl`](infra/cloud/cloud-init.sh.tftpl) | First-boot script on the VPS: enables IP forwarding, installs Tailscale, registers with `--advertise-exit-node --ssh`. The ACL's `autoApprovers` makes it usable immediately.                                                                                                                                |
 | [`outputs.tf`](infra/cloud/outputs.tf)                   | `kubeconfig` (sensitive), `cluster_id`, `firewall_id`, `tunnel_id`, `exit_node_public_ip`. Also writes `./kubeconfig` (mode 0600, gitignored) for local debugging.                                                                                                                                           |
 
