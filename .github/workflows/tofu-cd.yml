@@ -5,6 +5,7 @@ on:
         branches:
             - infra_cloud_main
             - infra_identity_main
+            - infra_git_main
 
 permissions:
     contents: read
@@ -18,7 +19,7 @@ jobs:
             group: tofu-apply-${{ github.ref_name }}
             cancel-in-progress: false
         env:
-            PROJECT: ${{ github.ref_name == 'infra_cloud_main' && 'cloud' || 'identity' }}
+            PROJECT: ${{ fromJson('{"infra_cloud_main":"cloud","infra_identity_main":"identity","infra_git_main":"git"}')[github.ref_name] }}
             # Shared: state backend + civo provider, used by every root.
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -39,6 +40,8 @@ jobs:
             TF_VAR_hydra_system_secret: ${{ github.ref_name == 'infra_identity_main' && secrets.HYDRA_SYSTEM_SECRET || '' }}
             TF_VAR_google_oauth_client_id: ${{ github.ref_name == 'infra_identity_main' && secrets.GOOGLE_OAUTH_CLIENT_ID || '' }}
             TF_VAR_google_oauth_client_secret: ${{ github.ref_name == 'infra_identity_main' && secrets.GOOGLE_OAUTH_CLIENT_SECRET || '' }}
+            # `git` root needs a fine-grained PAT (Administration:write).
+            GITHUB_TOKEN: ${{ github.ref_name == 'infra_git_main' && secrets.GH_TF_TOKEN || '' }}
         steps:
             - uses: actions/checkout@v4
 
