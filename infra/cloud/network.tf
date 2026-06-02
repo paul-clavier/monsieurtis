@@ -21,6 +21,10 @@ resource "tailscale_tailnet_key" "exit_node" {
 # `autoApprovers.exitNode` means devices tagged `tag:monsieurtis` are usable
 # as exit nodes the moment they register — no admin console click-through.
 resource "tailscale_acl" "policy" {
+  # This repo is the source of truth for the tailnet ACL; opt into stomping
+  # any out-of-band edits made via the Tailscale admin console.
+  overwrite_existing_content = true
+
   acl = jsonencode({
     tagOwners = {
       "tag:monsieurtis" = ["autogroup:admin"]
