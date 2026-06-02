@@ -46,7 +46,7 @@ resource "helm_release" "cloudflared" {
 
   set {
     name  = "cloudflare.tunnelToken"
-    value = data.cloudflare_zero_trust_tunnel_cloudflared_token.mrtis.token
+    value = data.cloudflare_zero_trust_tunnel_cloudflared_token.monsieurtis.token
   }
 
   set {

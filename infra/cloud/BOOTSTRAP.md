@@ -151,7 +151,7 @@ The single Tofu root for everything that needs to be running for `monsieurtis.co
 1. `civo_instance.exit_node` is provisioned and gets a public IPv4.
 2. Cloud-init installs Tailscale on the VPS; it registers using the tofu-generated auth key and is auto-approved as an exit node via the ACL.
 3. `civo_firewall_rule.kube_api` allowlists `${exit_node.public_ip}/32` on the cluster firewall. Nothing else reaches `:6443`.
-4. On the laptop: `tailscale up --exit-node=mrtis-exit`. All laptop traffic egresses from the VPS's IP, which is the only one the cluster firewall accepts.
+4. On the laptop: `tailscale up --exit-node=monsieurtis-exit`. All laptop traffic egresses from the VPS's IP, which is the only one the cluster firewall accepts.
 5. `kubectl` works only while the exit node is selected. Without it, requests time out — that's the firewall doing its job.
 
 ### `scripts/`
@@ -187,8 +187,8 @@ git push -u origin infra_cloud_main
 After CD completes, grab the exit-node IP from the workflow logs, then:
 
 ```bash
-tailscale up --exit-node=mrtis-exit --exit-node-allow-lan-access
-civo kubernetes config mrtis --save --merge --switch
+tailscale up --exit-node=monsieurtis-exit --exit-node-allow-lan-access
+civo kubernetes config monsieurtis --save --merge --switch
 kubectl get nodes                                  # 2 Ready
 kubectl get pods -A                                # traefik, cert-manager, cloudflared Running
 ```

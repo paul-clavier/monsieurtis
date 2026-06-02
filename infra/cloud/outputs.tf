@@ -16,7 +16,7 @@ output "firewall_id" {
 
 output "tunnel_id" {
   description = "Cloudflare tunnel ID. Subdomain CNAMEs already point at <tunnel_id>.cfargotunnel.com."
-  value       = cloudflare_zero_trust_tunnel_cloudflared.mrtis.id
+  value       = cloudflare_zero_trust_tunnel_cloudflared.monsieurtis.id
 }
 
 output "exit_node_public_ip" {

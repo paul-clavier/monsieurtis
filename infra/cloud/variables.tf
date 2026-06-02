@@ -10,7 +10,7 @@ variable "civo_region" {
 variable "cluster_name" {
   description = "Name of the managed k3s cluster as shown in the Civo dashboard."
   type        = string
-  default     = "mrtis"
+  default     = "monsieurtis"
 }
 
 variable "node_size" {
@@ -32,7 +32,7 @@ variable "node_count" {
 # only address `civo_firewall.cluster` lets past. Admin access from a laptop
 # rides the tailnet (Tailscale SSH; no public port 22 on the VPS), and
 # `kubectl` works only while the exit node is selected on the client side
-# (`tailscale up --exit-node=mrtis-exit`).
+# (`tailscale up --exit-node=monsieurtis-exit`).
 variable "exit_node_size" {
   description = "Civo instance size for the Tailscale exit node. Smallest g4 works — Tailscale uses ~50 MB RAM idle."
   type        = string
