@@ -1,0 +1,26 @@
+import { {{ENTITY}}_REPOSITORY } from "@/domain/injection-tokens";
+import {
+    {{Entity}},
+    {{Entity}}Filters,
+} from "@/interfaces/domain/{{entity}}.entity";
+import { CommonUseCases } from "@monsieurtis/core";
+import type { CommonRepository } from "@monsieurtis/core";
+import { Inject, Injectable } from "@nestjs/common";
+
+@Injectable()
+export class {{Entity}}UseCases extends CommonUseCases<
+    {{Entity}},
+    Record<string, never>,
+    {{Entity}}Filters
+> {
+    constructor(
+        @Inject({{ENTITY}}_REPOSITORY)
+        repository: CommonRepository<
+            {{Entity}},
+            Record<string, never>,
+            {{Entity}}Filters
+        >,
+    ) {
+        super(repository);
+    }
+}

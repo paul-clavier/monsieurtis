@@ -1,0 +1,12 @@
+{
+    "name": "@monsieurtis/linlin-interfaces",
+    "private": true,
+    "type": "module",
+    "dependencies": {
+        "@monsieurtis/core": "workspace:*",
+        "zod": "catalog:zod"
+    },
+    "devDependencies": {
+        "@monsieurtis/tsconfig": "workspace:*"
+    }
+}

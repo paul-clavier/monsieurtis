@@ -7,7 +7,8 @@
         ".": "./src/index.ts"
     },
     "dependencies": {
-        "@prisma/client": "6.7.0"
+        "@monsieurtis/core": "workspace:*",
+        "@prisma/client": "catalog:prisma"
     },
     "devDependencies": {
         "@monsieurtis/tsconfig": "workspace:*"

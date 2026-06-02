@@ -1,0 +1,34 @@
+import { Prisma } from "@/infrastructure/prisma/generated/client";
+import { PrismaService } from "@/infrastructure/prisma/prisma.service";
+import {
+    {{Entity}},
+    {{Entity}}Filters,
+} from "@/interfaces/domain/{{entity}}.entity";
+import { identity } from "@monsieurtis/core";
+import { PrismaCommonRepository } from "@monsieurtis/prisma";
+import { Injectable } from "@nestjs/common";
+
+@Injectable()
+export class Prisma{{Entity}}Repository extends PrismaCommonRepository<
+    {{Entity}},
+    Prisma.{{Entity}}GetPayload<{}>,
+    Record<string, never>,
+    {{Entity}}Filters
+> {
+    constructor(private readonly prisma: PrismaService) {
+        super();
+    }
+
+    protected get delegate() {
+        return this.prisma.{{entity}};
+    }
+
+    protected mapBase = identity<{{Entity}}, Prisma.{{Entity}}GetPayload<{}>>;
+
+    protected readonly filters = {
+        search: (q: string) => ({
+            // TODO: tune the field used for `search`
+            name: { contains: q, mode: "insensitive" as const },
+        }),
+    };
+}

@@ -1,0 +1,9 @@
+import { {{Entity}}DomainModule } from "@/domain/{{entity}}/{{entity}}.module";
+import { Module } from "@nestjs/common";
+import { {{Entity}}Controller } from "./{{entity}}.controller";
+
+@Module({
+    imports: [{{Entity}}DomainModule],
+    controllers: [{{Entity}}Controller],
+})
+export class {{Entity}}InternalModule {}

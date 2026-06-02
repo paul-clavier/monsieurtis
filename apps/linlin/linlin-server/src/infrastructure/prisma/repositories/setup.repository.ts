@@ -1,134 +1,50 @@
-import { Mutable, Page, PageQuery } from "@monsieurtis/core";
+import { Prisma } from "@/infrastructure/prisma/generated/client";
+import { PrismaService } from "@/infrastructure/prisma/prisma.service";
 import {
-    BaseSetup,
     Setup,
-    SetupIngredientDetail,
-} from "@/interfaces/domain/setup";
+    SetupIngredient,
+    SetupRelations,
+} from "@/interfaces/domain/setup.entity";
+import { identity } from "@monsieurtis/core";
+import { PrismaCommonRepository } from "@monsieurtis/prisma";
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@monsieurtis/prisma";
 
-const SETUP_INCLUDE = {
-    ingredients: { include: { ingredient: true } },
-    setups: true,
-} as const;
-
-const mapBaseSetup = (row: {
-    id: string;
-    name: string;
-    label: string;
-    description: string;
-    time: number;
-    capacity: number | null;
-}): BaseSetup => ({
-    id: row.id,
-    name: row.name,
-    label: row.label,
-    description: row.description,
-    time: row.time,
-    capacity: row.capacity,
-});
-
-const mapSetupIngredient = (row: {
-    setupId: string;
-    ingredientId: string;
-    quantity: number;
-    unit: string;
-    ingredient: { id: string; name: string; label: string };
-}): SetupIngredientDetail => ({
-    setupId: row.setupId,
-    ingredientId: row.ingredientId,
-    quantity: row.quantity,
-    unit: row.unit,
-    ingredient: {
-        id: row.ingredient.id,
-        name: row.ingredient.name,
-        label: row.ingredient.label,
-    },
-});
-
-const mapSetup = (row: any): Setup => ({
-    ...mapBaseSetup(row),
-    ingredients: row.ingredients.map(mapSetupIngredient),
-    subSetups: row.setups.map(mapBaseSetup),
-});
+type SetupRow = Prisma.SetupGetPayload<{}>;
+export type SetupWithIngredientsAndSubSetupsRow = Prisma.SetupGetPayload<{
+    include: {
+        ingredients: { include: { ingredient: true } };
+        subSetups: true;
+    };
+}>;
+export type SetupIngredientRow = Prisma.SetupIngredientGetPayload<{
+    include: { ingredient: true };
+}>;
 
 @Injectable()
-export class PrismaSetupRepository {
-    constructor(private readonly prisma: PrismaService) {}
-
-    async getOne(id: string): Promise<Setup | null> {
-        const row = await this.prisma.setup.findUnique({
-            where: { id },
-            include: SETUP_INCLUDE,
-        });
-        return row ? mapSetup(row) : null;
+export class PrismaSetupRepository extends PrismaCommonRepository<
+    Setup,
+    SetupRow,
+    SetupRelations
+> {
+    constructor(private readonly prisma: PrismaService) {
+        super();
     }
 
-    async getAll(): Promise<Setup[]> {
-        const rows = await this.prisma.setup.findMany({
-            include: SETUP_INCLUDE,
-        });
-        return rows.map(mapSetup);
+    protected get delegate() {
+        return this.prisma.setup;
     }
 
-    async getPage(query: PageQuery): Promise<Page<Setup>> {
-        const { page, pageSize } = query;
-        const [rows, total] = await Promise.all([
-            this.prisma.setup.findMany({
-                skip: (page - 1) * pageSize,
-                take: pageSize,
-                include: SETUP_INCLUDE,
-            }),
-            this.prisma.setup.count(),
-        ]);
-        return {
-            items: rows.map(mapSetup),
-            total,
-            page,
-            pageSize,
-        };
-    }
+    protected mapBase = identity<Setup, SetupRow>;
 
-    async create(data: Mutable<BaseSetup>): Promise<BaseSetup> {
-        const row = await this.prisma.setup.create({ data });
-        return mapBaseSetup(row);
-    }
-
-    async createMany(data: Mutable<BaseSetup>[]): Promise<number> {
-        const result = await this.prisma.setup.createMany({ data });
-        return result.count;
-    }
-
-    async update(
-        id: string,
-        data: Partial<Mutable<BaseSetup>>,
-    ): Promise<BaseSetup> {
-        const row = await this.prisma.setup.update({
-            where: { id },
-            data,
-        });
-        return mapBaseSetup(row);
-    }
-
-    async updateMany(
-        ids: string[],
-        data: Partial<Mutable<BaseSetup>>,
-    ): Promise<number> {
-        const result = await this.prisma.setup.updateMany({
-            where: { id: { in: ids } },
-            data,
-        });
-        return result.count;
-    }
-
-    async delete(id: string): Promise<void> {
-        await this.prisma.setup.delete({ where: { id } });
-    }
-
-    async deleteMany(ids: string[]): Promise<number> {
-        const result = await this.prisma.setup.deleteMany({
-            where: { id: { in: ids } },
-        });
-        return result.count;
-    }
+    protected readonly relations = {
+        ingredients: {
+            include: { ingredients: { include: { ingredient: true } } },
+            map: (rows: SetupIngredientRow[]) =>
+                rows.map(identity<SetupIngredient, SetupIngredientRow>),
+        },
+        subSetups: {
+            include: { subSetups: true },
+            map: (rows: SetupRow[]) => rows.map(identity<Setup, SetupRow>),
+        },
+    };
 }

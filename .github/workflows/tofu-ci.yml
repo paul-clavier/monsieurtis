@@ -1,0 +1,191 @@
+name: tofu-ci
+
+on:
+    pull_request:
+        branches:
+            - main
+        paths:
+            - infra/cloud/**
+            - infra/identity/**
+            - .github/workflows/tofu-ci.yml
+
+permissions:
+    contents: read
+
+concurrency:
+    group: tofu-ci-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    detect-changes:
+        runs-on: ubuntu-latest
+        outputs:
+            projects: ${{ steps.compute.outputs.projects }}
+        steps:
+            - uses: actions/checkout@v4
+            - id: filter
+              uses: dorny/paths-filter@v3
+              with:
+                  filters: |
+                      cloud:
+                        - 'infra/cloud/**'
+                      identity:
+                        - 'infra/identity/**'
+            - id: compute
+              run: |
+                  projects='[]'
+                  if [ "${{ steps.filter.outputs.cloud }}" = "true" ]; then
+                    projects=$(jq -c '. + ["cloud"]' <<<"$projects")
+                  fi
+                  if [ "${{ steps.filter.outputs.identity }}" = "true" ]; then
+                    projects=$(jq -c '. + ["identity"]' <<<"$projects")
+                  fi
+                  echo "projects=$projects" >> "$GITHUB_OUTPUT"
+
+    lint:
+        needs: detect-changes
+        if: needs.detect-changes.outputs.projects != '[]'
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                project: ${{ fromJson(needs.detect-changes.outputs.projects) }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: terraform-linters/setup-tflint@v6
+              with:
+                  tflint_version: latest
+            - name: tflint --init
+              working-directory: infra/${{ matrix.project }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: tflint --init
+            - name: tflint
+              working-directory: infra/${{ matrix.project }}
+              run: tflint --recursive --format=compact
+
+    validate:
+        needs: detect-changes
+        if: needs.detect-changes.outputs.projects != '[]'
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                project: ${{ fromJson(needs.detect-changes.outputs.projects) }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: opentofu/setup-opentofu@v1
+              with:
+                  tofu_version: 1.9.1
+                  tofu_wrapper: false
+            - name: tofu fmt
+              working-directory: infra/${{ matrix.project }}
+              run: tofu fmt -check -recursive -diff
+            - name: tofu init
+              working-directory: infra/${{ matrix.project }}
+              run: tofu init -backend=false -input=false -lockfile=readonly
+            - name: tofu validate
+              working-directory: infra/${{ matrix.project }}
+              run: tofu validate -no-color
+
+    security:
+        needs: detect-changes
+        if: needs.detect-changes.outputs.projects != '[]'
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                project: ${{ fromJson(needs.detect-changes.outputs.projects) }}
+        steps:
+            - uses: actions/checkout@v4
+            - name: trivy config scan
+              uses: aquasecurity/trivy-action@v0.36.0
+              with:
+                  scan-type: config
+                  scan-ref: infra/${{ matrix.project }}
+                  exit-code: "1"
+                  severity: HIGH,CRITICAL
+                  format: table
+
+    plan:
+        needs: detect-changes
+        # Skip on fork PRs: plan needs secrets, which must never reach a fork.
+        if: >-
+            needs.detect-changes.outputs.projects != '[]' &&
+            github.event.pull_request.head.repo.full_name == github.repository
+        runs-on: ubuntu-latest
+        environment: production
+        permissions:
+            contents: read
+            pull-requests: write
+        strategy:
+            fail-fast: false
+            matrix:
+                project: ${{ fromJson(needs.detect-changes.outputs.projects) }}
+        env:
+            # Shared: state backend + civo provider, used by every root.
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            CIVO_TOKEN: ${{ secrets.CIVO_TOKEN }}
+            TF_VAR_domain: monsieurtis.com
+            # Project-specific. Conditionals keep one project's secrets
+            # out of the other's runner environment.
+            TF_VAR_cloudflare_api_token: ${{ matrix.project == 'cloud' && secrets.CLOUDFLARE_API_TOKEN || '' }}
+            TF_VAR_cloudflare_account_id: ${{ matrix.project == 'cloud' && secrets.CLOUDFLARE_ACCOUNT_ID || '' }}
+            TF_VAR_cloudflare_zone_id: ${{ matrix.project == 'cloud' && secrets.CLOUDFLARE_ZONE_ID || '' }}
+            TF_VAR_admin_ssh_public_key: ${{ matrix.project == 'cloud' && secrets.CIVO_VPS_SSH_PUBLIC_KEY || '' }}
+            TAILSCALE_OAUTH_CLIENT_ID: ${{ matrix.project == 'cloud' && secrets.TAILSCALE_OAUTH_CLIENT_ID || '' }}
+            TAILSCALE_OAUTH_CLIENT_SECRET: ${{ matrix.project == 'cloud' && secrets.TAILSCALE_OAUTH_CLIENT_SECRET || '' }}
+            TAILSCALE_TAILNET: plclavier@gmail.com
+            TF_VAR_postgres_password: ${{ matrix.project == 'identity' && secrets.ORY_POSTGRES_PASSWORD || '' }}
+            TF_VAR_kratos_cookie_secret: ${{ matrix.project == 'identity' && secrets.KRATOS_COOKIE_SECRET || '' }}
+            TF_VAR_kratos_cipher_secret: ${{ matrix.project == 'identity' && secrets.KRATOS_CIPHER_SECRET || '' }}
+            TF_VAR_hydra_system_secret: ${{ matrix.project == 'identity' && secrets.HYDRA_SYSTEM_SECRET || '' }}
+            TF_VAR_google_oauth_client_id: ${{ matrix.project == 'identity' && secrets.GOOGLE_OAUTH_CLIENT_ID || '' }}
+            TF_VAR_google_oauth_client_secret: ${{ matrix.project == 'identity' && secrets.GOOGLE_OAUTH_CLIENT_SECRET || '' }}
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: opentofu/setup-opentofu@v1
+              with:
+                  tofu_version: 1.9.1
+                  tofu_wrapper: false
+
+            - name: tofu init
+              working-directory: infra/${{ matrix.project }}
+              run: tofu init -input=false -lockfile=readonly
+
+            - name: tofu plan
+              id: plan
+              working-directory: infra/${{ matrix.project }}
+              continue-on-error: true
+              run: |
+                  set -o pipefail
+                  tofu plan -no-color -input=false -out=tfplan 2>&1 | tee plan.txt
+
+            # Sensitive values are redacted by OpenTofu as "(sensitive value)"
+            # because every secret var/output is marked `sensitive = true`.
+            - name: Build comment body
+              working-directory: infra/${{ matrix.project }}
+              run: |
+                  {
+                    echo "### tofu plan — \`${{ matrix.project }}\` (\`${{ steps.plan.outcome }}\`)"
+                    echo ""
+                    echo "<details><summary>Plan output</summary>"
+                    echo ""
+                    echo '```hcl'
+                    head -c 60000 plan.txt
+                    echo ""
+                    echo '```'
+                    echo "</details>"
+                  } > comment.md
+
+            - name: Comment plan on PR
+              uses: marocchino/sticky-pull-request-comment@v2
+              with:
+                  header: tofu-plan-${{ matrix.project }}
+                  path: infra/${{ matrix.project }}/comment.md
+
+            - name: Fail if plan errored
+              if: steps.plan.outcome == 'failure'
+              run: exit 1

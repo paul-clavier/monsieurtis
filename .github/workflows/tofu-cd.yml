@@ -1,0 +1,60 @@
+name: tofu-cd
+
+on:
+    push:
+        branches:
+            - infra_cloud_main
+            - infra_identity_main
+
+permissions:
+    contents: read
+
+jobs:
+    apply:
+        runs-on: ubuntu-latest
+        environment: production
+        # One apply per branch/project at a time; never cancel a running apply.
+        concurrency:
+            group: tofu-apply-${{ github.ref_name }}
+            cancel-in-progress: false
+        env:
+            PROJECT: ${{ github.ref_name == 'infra_cloud_main' && 'cloud' || 'identity' }}
+            # Shared: state backend + civo provider, used by every root.
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            CIVO_TOKEN: ${{ secrets.CIVO_TOKEN }}
+            TF_VAR_domain: monsieurtis.com
+            # Project-specific. Conditionals keep one project's secrets
+            # out of the other's runner environment.
+            TF_VAR_cloudflare_api_token: ${{ github.ref_name == 'infra_cloud_main' && secrets.CLOUDFLARE_API_TOKEN || '' }}
+            TF_VAR_cloudflare_account_id: ${{ github.ref_name == 'infra_cloud_main' && secrets.CLOUDFLARE_ACCOUNT_ID || '' }}
+            TF_VAR_cloudflare_zone_id: ${{ github.ref_name == 'infra_cloud_main' && secrets.CLOUDFLARE_ZONE_ID || '' }}
+            TF_VAR_admin_ssh_public_key: ${{ github.ref_name == 'infra_cloud_main' && secrets.CIVO_VPS_SSH_PUBLIC_KEY || '' }}
+            TAILSCALE_OAUTH_CLIENT_ID: ${{ github.ref_name == 'infra_cloud_main' && secrets.TAILSCALE_OAUTH_CLIENT_ID || '' }}
+            TAILSCALE_OAUTH_CLIENT_SECRET: ${{ github.ref_name == 'infra_cloud_main' && secrets.TAILSCALE_OAUTH_CLIENT_SECRET || '' }}
+            TAILSCALE_TAILNET: plclavier@gmail.com
+            TF_VAR_postgres_password: ${{ github.ref_name == 'infra_identity_main' && secrets.ORY_POSTGRES_PASSWORD || '' }}
+            TF_VAR_kratos_cookie_secret: ${{ github.ref_name == 'infra_identity_main' && secrets.KRATOS_COOKIE_SECRET || '' }}
+            TF_VAR_kratos_cipher_secret: ${{ github.ref_name == 'infra_identity_main' && secrets.KRATOS_CIPHER_SECRET || '' }}
+            TF_VAR_hydra_system_secret: ${{ github.ref_name == 'infra_identity_main' && secrets.HYDRA_SYSTEM_SECRET || '' }}
+            TF_VAR_google_oauth_client_id: ${{ github.ref_name == 'infra_identity_main' && secrets.GOOGLE_OAUTH_CLIENT_ID || '' }}
+            TF_VAR_google_oauth_client_secret: ${{ github.ref_name == 'infra_identity_main' && secrets.GOOGLE_OAUTH_CLIENT_SECRET || '' }}
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: opentofu/setup-opentofu@v1
+              with:
+                  tofu_version: 1.9.1
+                  tofu_wrapper: false
+
+            - name: tofu init
+              working-directory: infra/${{ env.PROJECT }}
+              run: tofu init -input=false -lockfile=readonly
+
+            - name: tofu plan
+              working-directory: infra/${{ env.PROJECT }}
+              run: tofu plan -input=false -out=tfplan
+
+            - name: tofu apply
+              working-directory: infra/${{ env.PROJECT }}
+              run: tofu apply -input=false tfplan

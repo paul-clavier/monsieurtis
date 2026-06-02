@@ -1,0 +1,26 @@
+{
+    "name": "@monsieurtis/nest-rest-crud",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "dependencies": {
+        "@monsieurtis/core": "workspace:*"
+    },
+    "peerDependencies": {
+        "@nestjs/common": "catalog:nest",
+        "@nestjs/swagger": "catalog:nest",
+        "nestjs-zod": "catalog:nest",
+        "zod": "catalog:zod"
+    },
+    "devDependencies": {
+        "@monsieurtis/tsconfig": "workspace:*",
+        "@nestjs/common": "catalog:nest",
+        "@nestjs/swagger": "catalog:nest",
+        "nestjs-zod": "catalog:nest",
+        "reflect-metadata": "catalog:nest",
+        "zod": "catalog:zod"
+    }
+}

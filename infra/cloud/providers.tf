@@ -1,0 +1,43 @@
+provider "civo" {
+  region = var.civo_region
+}
+
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
+}
+
+# Reads TAILSCALE_OAUTH_CLIENT_ID / TAILSCALE_OAUTH_CLIENT_SECRET / TAILSCALE_TAILNET
+# from the environment.
+provider "tailscale" {}
+
+locals {
+  kubeconfig = yamldecode(civo_kubernetes_cluster.main.kubeconfig)
+  cluster    = local.kubeconfig.clusters[0].cluster
+  user       = local.kubeconfig.users[0].user
+}
+
+provider "kubernetes" {
+  host                   = local.cluster.server
+  client_certificate     = base64decode(local.user["client-certificate-data"])
+  client_key             = base64decode(local.user["client-key-data"])
+  cluster_ca_certificate = base64decode(local.cluster["certificate-authority-data"])
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = local.cluster.server
+    client_certificate     = base64decode(local.user["client-certificate-data"])
+    client_key             = base64decode(local.user["client-key-data"])
+    cluster_ca_certificate = base64decode(local.cluster["certificate-authority-data"])
+  }
+}
+
+# `load_config_file = false` prevents the provider from falling back to
+# ~/.kube/config when the inline config is unknown at plan time.
+provider "kubectl" {
+  host                   = local.cluster.server
+  client_certificate     = base64decode(local.user["client-certificate-data"])
+  client_key             = base64decode(local.user["client-key-data"])
+  cluster_ca_certificate = base64decode(local.cluster["certificate-authority-data"])
+  load_config_file       = false
+}

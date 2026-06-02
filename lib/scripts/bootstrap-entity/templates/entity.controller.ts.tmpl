@@ -1,0 +1,20 @@
+import { {{Entity}}UseCases } from "@/domain/{{entity}}/{{entity}}.use-cases";
+import { {{Entity}} } from "@/interfaces/domain/{{entity}}.entity";
+import { CommonControllerMixin } from "@monsieurtis/nest-rest-crud";
+import { Controller } from "@nestjs/common";
+import { {{Entity}}Create, {{Entity}}Filters } from "./{{entity}}.schemas";
+
+@Controller("{{entities}}")
+export class {{Entity}}Controller extends CommonControllerMixin<
+    {{Entity}},
+    Record<string, never>,
+    typeof {{Entity}}Create,
+    typeof {{Entity}}Filters
+>({
+    create: {{Entity}}Create,
+    filters: {{Entity}}Filters,
+}) {
+    constructor(public readonly useCases: {{Entity}}UseCases) {
+        super();
+    }
+}

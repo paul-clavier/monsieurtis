@@ -11,8 +11,10 @@
         "baseUrl": ".",
         "paths": {
             "#/*": ["./src/*"],
-            "@/*": ["./src/*"]
+            "@/*": ["./src/*"],
+            "@/interfaces/*": ["../interfaces/*"],
+            "@monsieurtis/core": ["../../../lib/core/src/index.ts"]
         }
     },
-    "include": ["**/*.ts", "**/*.tsx"]
+    "include": ["**/*.ts", "**/*.tsx", "../interfaces"]
 }
