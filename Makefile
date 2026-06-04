@@ -34,6 +34,10 @@ list-secrets: ## List 1Password secrets in the MonsieurTis vault
 sync-secrets: ## Sync 1Password secrets with git
 	@./scripts/sync-1password-with-git.sh
 
+# network
+tail-up:
+	@tailscale up
+
 # ─── app ──────────────────────────────────────────────────────────────────────
 # (add app targets here)
 

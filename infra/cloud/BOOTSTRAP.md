@@ -211,3 +211,17 @@ To rebuild from scratch:
 3. Follow Part 1 from the top.
 
 The OAuth client and SSH key from prior installs can be reused — no need to regenerate unless they were compromised.
+
+## How to add civo k3s cluster to kubectl
+
+Route through the exit node (the only IP the firewall allows to reach :6443)
+
+```sh
+tailscale up --exit-node=monsieurtis-exit --exit-node-allow-lan-access
+```
+
+Pull the kubeconfig from Civo and merge it into ~/.kube/config
+
+```sh
+civo kubernetes config monsieurtis --save
+```
