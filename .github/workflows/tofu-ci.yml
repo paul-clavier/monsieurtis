@@ -156,8 +156,9 @@ jobs:
               run: tofu init -input=false -lockfile=readonly
 
             # See `tofu-cd.yml` for rationale. Plan refreshes K8s resources
-            # via the cluster API, which is only reachable through the
-            # tag:monsieurtis exit node.
+            # via the cluster API, which is only reachable through the exit
+            # node. Exit-node selection is a separate step (by-name fails on
+            # first `up` before the netmap syncs).
             - name: Tailscale up
               if: matrix.project == 'cloud'
               uses: tailscale/github-action@v3
@@ -165,7 +166,19 @@ jobs:
                   oauth-client-id: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
                   oauth-secret: ${{ secrets.TAILSCALE_OAUTH_CLIENT_SECRET }}
                   tags: tag:ci
-                  args: --exit-node=monsieurtis-exit
+
+            - name: Route kube API traffic through the exit node
+              if: matrix.project == 'cloud'
+              run: |
+                  EXIT_IP=$(sudo tailscale status --json \
+                    | jq -r '.Peer[] | select(.HostName == "monsieurtis-exit") | .TailscaleIPs[0]')
+                  if [ -z "$EXIT_IP" ] || [ "$EXIT_IP" = "null" ]; then
+                    echo "exit node 'monsieurtis-exit' not found in tailnet" >&2
+                    sudo tailscale status >&2
+                    exit 1
+                  fi
+                  echo "Routing via exit node monsieurtis-exit ($EXIT_IP)"
+                  sudo tailscale set --exit-node="$EXIT_IP" --exit-node-allow-lan-access
 
             - name: tofu plan
               id: plan

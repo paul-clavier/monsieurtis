@@ -62,7 +62,23 @@ jobs:
                   oauth-client-id: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
                   oauth-secret: ${{ secrets.TAILSCALE_OAUTH_CLIENT_SECRET }}
                   tags: tag:ci
-                  args: --exit-node=monsieurtis-exit
+
+            # The cluster firewall accepts traffic only from the exit node's
+            # public IP, so all kube API traffic must egress through it. The
+            # netmap is synced now, so resolve the exit node's tailnet IP and
+            # select it by IP (avoids depending on MagicDNS name resolution).
+            - name: Route kube API traffic through the exit node
+              if: env.PROJECT == 'cloud'
+              run: |
+                  EXIT_IP=$(sudo tailscale status --json \
+                    | jq -r '.Peer[] | select(.HostName == "monsieurtis-exit") | .TailscaleIPs[0]')
+                  if [ -z "$EXIT_IP" ] || [ "$EXIT_IP" = "null" ]; then
+                    echo "exit node 'monsieurtis-exit' not found in tailnet" >&2
+                    sudo tailscale status >&2
+                    exit 1
+                  fi
+                  echo "Routing via exit node monsieurtis-exit ($EXIT_IP)"
+                  sudo tailscale set --exit-node="$EXIT_IP" --exit-node-allow-lan-access
 
             - name: tofu plan
               working-directory: infra/${{ env.PROJECT }}
