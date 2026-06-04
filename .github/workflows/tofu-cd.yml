@@ -63,10 +63,13 @@ jobs:
                   oauth-secret: ${{ secrets.TAILSCALE_OAUTH_CLIENT_SECRET }}
                   tags: tag:ci
 
-            # The cluster firewall accepts traffic only from the exit node's
+            # 1. The cluster firewall accepts traffic only from the exit node's
             # public IP, so all kube API traffic must egress through it. Now
             # that login has synced the netmap, the name resolves; `set` flips
             # this one preference in place without re-applying the rest.
+            # 2. --exit-node-allow-lan-access carves out an exception:
+            # LAN/private-range destinations (10/8, 172.16/12, 192.168/16) stay on the
+            # runner's direct local route, while everything public still egresses via the exit node.
             - name: Route kube API traffic through the exit node
               if: env.PROJECT == 'cloud'
               run: sudo tailscale set --exit-node=monsieurtis-exit --exit-node-allow-lan-access
