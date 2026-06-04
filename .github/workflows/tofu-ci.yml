@@ -155,10 +155,7 @@ jobs:
               working-directory: infra/${{ matrix.project }}
               run: tofu init -input=false -lockfile=readonly
 
-            # See `tofu-cd.yml` for rationale. Plan refreshes K8s resources
-            # via the cluster API, which is only reachable through the exit
-            # node. Exit-node selection is a separate step (by-name fails on
-            # first `up` before the netmap syncs).
+            # See `tofu-cd.yml` for rationale.
             - name: Tailscale up
               if: matrix.project == 'cloud'
               uses: tailscale/github-action@v3
