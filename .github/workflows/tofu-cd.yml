@@ -63,16 +63,17 @@ jobs:
                   oauth-secret: ${{ secrets.TAILSCALE_OAUTH_CLIENT_SECRET }}
                   tags: tag:ci
 
-            # 1. The cluster firewall accepts traffic only from the exit node's
-            # public IP, so all kube API traffic must egress through it. Now
-            # that login has synced the netmap, the name resolves; `set` flips
-            # this one preference in place without re-applying the rest.
-            # 2. --exit-node-allow-lan-access carves out an exception:
-            # LAN/private-range destinations (10/8, 172.16/12, 192.168/16) stay on the
-            # runner's direct local route, while everything public still egresses via the exit node.
+            # The cluster firewall accepts traffic only from the exit node's
+            # public IP, so all kube API traffic must egress through it.
+            # 1. `up` returns once the backend is Running, but the peer netmap (and
+            # each peer's exit-node flag) may not have been fully synced, hence `set --exit-node=<name>`
+            # indicated an unknown exit node. So retry until the netmap catches up; timeout-minutes bounds it.
+            # 2. --exit-node-allow-lan-access keeps LAN/private ranges on the direct
+            # route while everything public egresses via the exit node.
             - name: Route kube API traffic through the exit node
               if: env.PROJECT == 'cloud'
-              run: sudo tailscale set --exit-node=monsieurtis-exit --exit-node-allow-lan-access
+              timeout-minutes: 2
+              run: until sudo tailscale set --exit-node=monsieurtis-exit --exit-node-allow-lan-access; do sleep 2; done
 
             - name: tofu plan
               working-directory: infra/${{ env.PROJECT }}
