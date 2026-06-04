@@ -25,6 +25,9 @@ help: ## Show this help
 
 # ─── scripts ──────────────────────────────────────────────────────────────────
 # secrets
+op-login:
+	@eval $(op signin)
+
 list-secrets: ## List 1Password secrets in the MonsieurTis vault
 	@op item list --vault "MonsieurTis"
 
@@ -40,3 +43,6 @@ sync-secrets: ## Sync 1Password secrets with git
 # automatically reachable as `make tofu-<action>-cloud` from the root.
 tofu-%-cloud:
 	@$(MAKE) -C infra/cloud tofu-$*
+
+bootstrap-tofu-apply:
+	@cd infra/bootstrap && ./run.sh
