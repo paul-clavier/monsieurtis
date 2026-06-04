@@ -55,10 +55,12 @@ resource "helm_release" "cloudflared" {
   }
 }
 
-# Shared rate-limit middleware. Apps reference as `ratelimit@kubernetescrd`
-# from their IngressRoute. Uses kubectl_manifest (not kubernetes_manifest)
+# 1. Shared rate-limit middleware. Apps reference as `ratelimit@kubernetescrd`
+# from their IngressRoute. 
+# 2. Uses kubectl_manifest (not kubernetes_manifest)
 # so the provider tolerates the cluster being unknown at plan time on a
 # fresh apply — see providers.tf for the rationale.
+# 3. Just a single CRD, no helm chart required
 resource "kubectl_manifest" "ratelimit" {
   yaml_body = yamlencode({
     apiVersion = "traefik.io/v1alpha1"

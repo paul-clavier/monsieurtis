@@ -61,6 +61,30 @@ terraform {
 }
 ```
 
+## Rerun
+
+Once the initial run has migrated state into the bucket, subsequent applies
+(e.g. adding a tag to the ACL, bumping a provider) are straightforward — the
+only twist is that the s3 backend needs the bucket credentials in env _before_
+`tofu init` can read remote state, so you can no longer derive them from
+`tofu output`. Pull them from 1Password instead:
+
+```bash
+cd infra/bootstrap
+
+export CIVO_TOKEN=$(op read "op://MonsieurTis/civo.CIVO_TOKEN/password")
+export TAILSCALE_OAUTH_CLIENT_ID=$(op read "op://MonsieurTis/tailscale.TAILSCALE_OAUTH_CLIENT_ID/password")
+export TAILSCALE_OAUTH_CLIENT_SECRET=$(op read "op://MonsieurTis/tailscale.TAILSCALE_OAUTH_CLIENT_SECRET/password")
+export TAILSCALE_TAILNET=plclavier@gmail.com
+export AWS_ACCESS_KEY_ID=$(op read "op://MonsieurTis/civo.object-store.tofu.AWS_ACCESS_KEY_ID/password")
+export AWS_SECRET_ACCESS_KEY=$(op read "op://MonsieurTis/civo.object-store.tofu.AWS_SECRET_ACCESS_KEY/password")
+
+tofu init
+tofu apply
+```
+
+This script can be found at `./run.sh`
+
 ## Notes
 
 - The Civo Object Store minimum size is 500 GB (`max_size_gb`); state files are
