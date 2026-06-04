@@ -169,16 +169,7 @@ jobs:
 
             - name: Route kube API traffic through the exit node
               if: matrix.project == 'cloud'
-              run: |
-                  EXIT_IP=$(sudo tailscale status --json \
-                    | jq -r '.Peer[] | select(.HostName == "monsieurtis-exit") | .TailscaleIPs[0]')
-                  if [ -z "$EXIT_IP" ] || [ "$EXIT_IP" = "null" ]; then
-                    echo "exit node 'monsieurtis-exit' not found in tailnet" >&2
-                    sudo tailscale status >&2
-                    exit 1
-                  fi
-                  echo "Routing via exit node monsieurtis-exit ($EXIT_IP)"
-                  sudo tailscale set --exit-node="$EXIT_IP" --exit-node-allow-lan-access
+              run: sudo tailscale set --exit-node=monsieurtis-exit --exit-node-allow-lan-access
 
             - name: tofu plan
               id: plan
