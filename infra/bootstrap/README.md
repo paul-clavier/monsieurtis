@@ -20,7 +20,7 @@ bucket it just created (self-hosted).
 
 The OAuth client used by CI and by `infra/cloud` holds a single **registrar**
 tag, `tag:register`, and nothing else. The device tags it needs to stamp are
-owned *by* that registrar tag in `tagOwners`:
+owned _by_ that registrar tag in `tagOwners`:
 
 ```hcl
 "tag:register"    = ["autogroup:admin"]              # the OAuth client's only tag
@@ -29,7 +29,7 @@ owned *by* that registrar tag in `tagOwners`:
 ```
 
 Why the indirection rather than putting `tag:ci`/`tag:monsieurtis` on the client
-directly: an OAuth client is a *tagged, non-human* identity, so it is not a
+directly: an OAuth client is a _tagged, non-human_ identity, so it is not a
 member of `autogroup:admin` and may only assign a tag that is owned by one of
 its own tags (Tailscale's ["apply a tag from another
 tag"](https://tailscale.com/docs/features/tags#apply-a-tag-from-another-tag)
