@@ -52,7 +52,7 @@ jobs:
               run: tofu init -input=false -lockfile=readonly
 
             # The cluster firewall accepts traffic only from the exit node's
-            # public IP. Route the runner's egress through it so the
+            # public IP. Route the runner's egress through it via tailnet so the
             # kubernetes/helm/kubectl providers can reach the kube API.
             # tag:ci devices are ephemeral and deregister when the job ends.
             - name: Tailscale up

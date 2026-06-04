@@ -11,6 +11,7 @@
 # It is used so the VPS can join the tailscale network.
 # Short expiry because the VPS reads it within seconds of boot; if the
 # Tofu state file ever leaks, the window of exposure is bounded.
+# Uses TAILSCALE_OAUTH_CLIENT_ID / TAILSCALE_OAUTH_CLIENT_SECRET / TAILSCALE_TAILNET under the hood
 resource "tailscale_tailnet_key" "exit_node" {
   reusable      = false
   ephemeral     = false
