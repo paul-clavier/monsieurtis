@@ -45,7 +45,7 @@ resource "helm_release" "cloudflared" {
   version    = var.chart_versions.cloudflared
 
   set {
-    name  = "cloudflare.tunnelToken"
+    name  = "cloudflare.tunnel_token"
     value = data.cloudflare_zero_trust_tunnel_cloudflared_token.monsieurtis.token
   }
 

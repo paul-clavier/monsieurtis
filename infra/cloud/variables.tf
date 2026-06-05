@@ -85,6 +85,6 @@ variable "chart_versions" {
   default = {
     traefik      = "33.0.0"
     cert_manager = "v1.16.1"
-    cloudflared  = "0.3.2"
+    cloudflared  = "0.1.2"
   }
 }
