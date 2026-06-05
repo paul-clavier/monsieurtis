@@ -9,11 +9,18 @@ resource "tailscale_acl" "policy" {
 
   acl = jsonencode({
     tagOwners = {
-      # Tag used for the Civo exit-node VPS
-      "tag:monsieurtis" = ["autogroup:admin"]
-      # Applied to ephemeral GitHub Actions runners that route egress through
-      # the tag:monsieurtis exit node to reach the cluster API.
-      "tag:ci" = ["autogroup:admin"]
+      # Registrar identity: the ONLY tag held by the CI/bootstrap OAuth client.
+      # An OAuth client is a *tagged* (non-human) identity and is NOT a member of
+      # autogroup:admin, so it can only assign a tag that is owned by one of its
+      # own tags (see tailscale#15456 and
+      # https://tailscale.com/docs/features/tags#apply-a-tag-from-another-tag).
+      # A dedicated registrar tag — which owns the device tags below — lets the
+      # client mint keys carrying those tags, while the device tags themselves
+      # own nothing: a compromised runner cannot register or retag further
+      # devices (least privilege).
+      "tag:register" = ["autogroup:admin"]
+      "tag:monsieurtis" = ["autogroup:admin", "tag:register"]
+      "tag:ci" = ["autogroup:admin", "tag:register"]
     }
     autoApprovers = {
       # `autoApprovers.exitNode` means devices tagged `tag:monsieurtis` are

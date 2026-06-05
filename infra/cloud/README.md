@@ -58,7 +58,11 @@ The Cloudflare API token needs:
 - `Zone → Zone → Read` on the apex
 
 The Tailscale OAuth client needs scopes `auth_keys:write`, `policy_file:write`,
-`devices:write`, with tag `tag:monsieurtis`.
+`devices:write`, and the single tag `tag:register`. That registrar tag owns the
+device tags (`tag:ci`, `tag:monsieurtis`) in the ACL, which is what lets the
+client mint keys carrying them — see the tag model in
+[`infra/bootstrap`](../bootstrap). The device tags are **not** put on the client
+directly.
 
 ## Apply
 

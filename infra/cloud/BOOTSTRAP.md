@@ -21,7 +21,12 @@ End-to-end guide to bring up Monsieur Tis `infra/cloud` project from nothing: ex
 - [ ] Add device #2: install the Tailscale app on your phone, sign in with the same Google account. (Removable afterwards.)
 - [ ] Settings → OAuth clients → **Generate OAuth client**:
     - Scopes: `auth_keys:write`, `policy_file:write`, `devices:write`.
-    - Tags: `tag:monsieurtis` and `tag:ci` (one must match the tag used in `network.tf`).
+    - Tags: **`tag:register` only.** This is a registrar tag that *owns* the
+      device tags (`tag:ci`, `tag:monsieurtis`) in the ACL, so the client may
+      mint keys carrying them. Do **not** put the device tags directly on the
+      client. (Requires `tag:register` to already exist in the deployed ACL —
+      run `infra/bootstrap` first; see the tag model in
+      [infra/bootstrap/README.md](infra/bootstrap/README.md).)
     - Capture `client_id` and `client_secret` — shown once.
 - [ ] Note your **tailnet name** (top-left in the admin console).
 
