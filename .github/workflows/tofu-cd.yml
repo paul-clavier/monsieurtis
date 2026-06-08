@@ -39,6 +39,7 @@ jobs:
             TF_VAR_hydra_system_secret: ${{ github.ref_name == 'infra_identity_main' && secrets.HYDRA_SYSTEM_SECRET || '' }}
             TF_VAR_google_oauth_client_id: ${{ github.ref_name == 'infra_identity_main' && secrets.GOOGLE_OAUTH_CLIENT_ID || '' }}
             TF_VAR_google_oauth_client_secret: ${{ github.ref_name == 'infra_identity_main' && secrets.GOOGLE_OAUTH_CLIENT_SECRET || '' }}
+            TF_VAR_smtp_connection_uri: ${{ github.ref_name == 'infra_identity_main' && secrets.SMTP_CONNECTION_URI || '' }}
         steps:
             - uses: actions/checkout@v4
 

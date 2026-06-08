@@ -7,7 +7,7 @@ serve:
         cors:
             enabled: true
             allowed_origins:
-                - https://${auth_host}
+                - https://${login_host}
             allowed_methods: [GET, POST, PUT, PATCH, DELETE]
             allowed_headers: [Authorization, Cookie, Content-Type]
             exposed_headers: [Content-Type, Set-Cookie]
@@ -17,9 +17,9 @@ serve:
 
 # Crocus owns every UI surface.
 selfservice:
-    default_browser_return_url: https://${auth_host}/
+    default_browser_return_url: https://${login_host}/
     allowed_return_urls:
-        - https://${auth_host}
+        - https://${login_host}
 
     methods:
         password:
@@ -47,10 +47,10 @@ selfservice:
 
     flows:
         login:
-            ui_url: https://${auth_host}/login
+            ui_url: https://${login_host}/login
             lifespan: 10m
         registration:
-            ui_url: https://${auth_host}/registration
+            ui_url: https://${login_host}/registration
             lifespan: 10m
             after:
                 password:
@@ -61,24 +61,24 @@ selfservice:
                         - hook: session
         recovery:
             enabled: true
-            ui_url: https://${auth_host}/recovery
+            ui_url: https://${login_host}/recovery
             use: code
         verification:
             enabled: true
-            ui_url: https://${auth_host}/verification
+            ui_url: https://${login_host}/verification
             use: code
             after:
-                default_browser_return_url: https://${auth_host}/
+                default_browser_return_url: https://${login_host}/
         error:
-            ui_url: https://${auth_host}/error
+            ui_url: https://${login_host}/error
         settings:
-            ui_url: https://${auth_host}/settings
+            ui_url: https://${login_host}/settings
             privileged_session_max_age: 15m
 
 session:
     lifespan: 720h
     cookie:
-        domain: ${auth_host}
+        domain: ${login_host}
         same_site: Lax
         persistent: true
 

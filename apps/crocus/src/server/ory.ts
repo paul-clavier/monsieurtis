@@ -6,12 +6,12 @@
  * URLs come from env vars set by the Kubernetes Deployment (see
  * `infra/identity/crocus.tf`):
  *
- *   KRATOS_PUBLIC_URL   → https://auth.monsieurtis.com           (browser-visible)
+ *   KRATOS_PUBLIC_URL   → https://login.monsieurtis.com          (browser-visible)
  *   KRATOS_ADMIN_URL    → http://kratos-admin.identity.svc (in-cluster only)
  *   HYDRA_ADMIN_URL     → http://hydra-admin.identity.svc:4445
  *   KETO_READ_URL       → http://keto-read.identity.svc:80
  *   KETO_WRITE_URL      → http://keto-write.identity.svc:80
- *   PUBLIC_AUTH_ORIGIN  → https://auth.monsieurtis.com
+ *   PUBLIC_AUTH_ORIGIN  → https://login.monsieurtis.com
  */
 
 import type { KetoCheckClient } from "@monsieurtis/ory";

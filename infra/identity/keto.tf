@@ -54,36 +54,23 @@ resource "helm_release" "keto" {
 }
 
 ###############################################################################
-# Seed the initial admin tuple.
+# Seed Zanzibar tuples.
 #
-# We use a Kubernetes Job with a `keto` CLI container that POSTs to the local
-# Keto write API. Runs once per change to `initial_admin_kratos_id`; idempotent
-# (PUT semantics, same tuple → no-op).
+# Tuples are declared in `config/keto-tuples.yaml.tftpl` (one row per
+# Zanzibar relation). A Kubernetes Job mounts the rendered list as JSON and
+# PUTs each row against Keto's local write API. PUT semantics make the Job
+# idempotent — re-applies and partial failures converge to the same state.
 #
-# Empty `initial_admin_kratos_id` is the bootstrap state — the job is skipped
-# entirely so the first apply doesn't fail. Fill it in after the first user
-# registers and re-apply.
+# Empty `initial_admin_kratos_id` is the bootstrap state: the YAML references
+# `${admin_id}`, so before that variable is set the seed Job is skipped
+# entirely. Fill it in after the first user registers and re-apply.
 ###############################################################################
 
 locals {
-  seed_tuples = var.initial_admin_kratos_id == "" ? [] : concat(
-    [
-      {
-        namespace  = "crocus-admin"
-        object     = "platform"
-        relation   = "access"
-        subject_id = "user:${var.initial_admin_kratos_id}"
-      },
-    ],
-    [
-      for app_id, _cfg in var.registered_apps : {
-        namespace  = "app"
-        object     = app_id
-        relation   = "access"
-        subject_id = "user:${var.initial_admin_kratos_id}"
-      }
-    ],
-  )
+  seed_tuples = var.initial_admin_kratos_id == "" ? [] : yamldecode(templatefile(
+    "${path.module}/config/keto-tuples.yaml.tftpl",
+    { admin_id = var.initial_admin_kratos_id },
+  )).tuples
 }
 
 resource "kubernetes_config_map" "keto_seed" {
@@ -103,8 +90,9 @@ resource "kubernetes_job" "keto_seed" {
   count = length(local.seed_tuples) == 0 ? 0 : 1
 
   metadata {
-    # Job name changes when the admin ID changes, so a re-apply creates a
-    # fresh job rather than complaining about an immutable spec.
+    # Job name is suffixed with a hash of the tuples, so any change to the
+    # YAML (or admin ID) spawns a fresh Job rather than complaining about
+    # an immutable spec.
     name      = "keto-seed-${substr(sha256(jsonencode(local.seed_tuples)), 0, 10)}"
     namespace = kubernetes_namespace.identity.metadata[0].name
   }

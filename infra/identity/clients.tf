@@ -3,23 +3,31 @@
 #
 # We avoid the unofficial `oryd/hydra` Terraform provider (not on registry, and
 # adds a maintenance burden) and instead use Hydra's admin API directly from a
-# Kubernetes Job. POST is idempotent for our purposes because we delete-and-
-# recreate on every config change (job name embeds a config hash).
+# Kubernetes Job. PUT is idempotent so the job re-runs safely on every config
+# change (job name embeds a config hash).
 #
-# Each app gets a stable `client_id` (matches `var.registered_apps` key) and a
-# generated `client_secret` stored as a Secret. Apps mount that secret to read
-# their OIDC credentials.
+# Two client flavors, selected per entry in `var.registered_apps`:
+#   - public        SPA / mobile. `token_endpoint_auth_method = "none"`, no
+#                   client_secret minted, PKCE enforced by Hydra. Nothing to
+#                   mount in-cluster — the browser drives the flow itself.
+#   - confidential  Server-side app. A random client_secret is generated and
+#                   stored in a K8s Secret `hydra-client-<id>` for the app to
+#                   mount when calling Hydra's token endpoint.
 ###############################################################################
 
+locals {
+  confidential_apps = { for k, cfg in var.registered_apps : k => cfg if cfg.type == "confidential" }
+}
+
 resource "random_password" "client_secret" {
-  for_each = var.registered_apps
+  for_each = local.confidential_apps
 
   length  = 48
   special = false
 }
 
 resource "kubernetes_secret" "client_credentials" {
-  for_each = var.registered_apps
+  for_each = local.confidential_apps
 
   metadata {
     name      = "hydra-client-${each.key}"
@@ -33,7 +41,7 @@ resource "kubernetes_secret" "client_credentials" {
   data = {
     client_id     = each.key
     client_secret = random_password.client_secret[each.key].result
-    issuer_url    = "https://${local.id_host}"
+    issuer_url    = "https://${local.oauth_host}"
   }
 }
 
@@ -46,16 +54,20 @@ resource "kubernetes_config_map" "client_specs" {
 
   data = {
     "clients.json" = jsonencode([
-      for client_id, cfg in var.registered_apps : {
-        client_id                  = client_id
-        client_name                = client_id
-        client_secret              = random_password.client_secret[client_id].result
-        redirect_uris              = cfg.redirect_uris
-        scope                      = cfg.scopes
-        grant_types                = ["authorization_code", "refresh_token"]
-        response_types             = ["code", "id_token"]
-        token_endpoint_auth_method = "client_secret_basic"
-      }
+      for client_id, cfg in var.registered_apps : merge(
+        {
+          client_id                  = client_id
+          client_name                = client_id
+          redirect_uris              = cfg.redirect_uris
+          scope                      = cfg.scopes
+          grant_types                = ["authorization_code", "refresh_token"]
+          response_types             = ["code"]
+          token_endpoint_auth_method = cfg.type == "public" ? "none" : "client_secret_basic"
+        },
+        cfg.type == "confidential" ? {
+          client_secret = random_password.client_secret[client_id].result
+        } : {}
+      )
     ])
   }
 }

@@ -45,6 +45,11 @@ tail-up:
 # cloud: delegate any `tofu-<action>-cloud` target to `infra/cloud`'s Makefile.
 # Adding a new `tofu-<action>` target in infra/cloud/Makefile makes it
 # automatically reachable as `make tofu-<action>-cloud` from the root.
+# Usage: eval $(make tofu-login)
+tofu-login:
+	@echo "export AWS_ACCESS_KEY_ID=$$(op read 'op://MonsieurTis/civo.object-store.tofu.AWS_ACCESS_KEY_ID/password')"
+	@echo "export AWS_SECRET_ACCESS_KEY=$$(op read 'op://MonsieurTis/civo.object-store.tofu.AWS_SECRET_ACCESS_KEY/password')"
+
 tofu-%-cloud:
 	@$(MAKE) -C infra/cloud tofu-$*
 

@@ -72,7 +72,33 @@ variable "domain" {
 variable "subdomains" {
   description = "Subdomains to expose through the Cloudflare tunnel. Each becomes a proxied CNAME under `var.domain`."
   type        = list(string)
-  default     = ["auth", "id", "linlin", "api-linlin", "harley"]
+  default     = ["login", "oauth", "linlin", "api-linlin", "harley"]
+}
+
+################################
+#       EMAIL ROUTING.         #
+################################
+# Cloudflare Email Routing accepts inbound mail at `*@<var.domain>` on Cloudflare's MX
+# servers and forwards each message to a verified destination mailbox. Outbound sending
+# is handled separately by Resend (see infra/identity/BOOTSTRAP.md).
+variable "email_routing_destination" {
+  description = "Destination mailbox that receives forwarded mail. Confirmed once via the verification email Cloudflare sends after the first apply — forwarding silently drops mail until then."
+  type        = string
+  default     = "tis.monsieurtis@gmail.com"
+}
+
+variable "email_routing_aliases" {
+  description = "Map of `local-part` → forwarded address. Each entry creates a Cloudflare Email Routing rule that forwards `<local>@<var.domain>` to the given address."
+  type        = map(string)
+  default = {
+    support = "tis.monsieurtis@gmail.com"
+  }
+}
+
+variable "email_routing_catch_all" {
+  description = "Destination for the catch-all rule, applied to any `*@<var.domain>` not matched by `email_routing_aliases`. Set to `null` to disable the catch-all."
+  type        = string
+  default     = "tis.monsieurtis@gmail.com"
 }
 
 variable "chart_versions" {

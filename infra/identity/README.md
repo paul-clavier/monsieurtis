@@ -15,10 +15,10 @@ cluster must exist before identity can plan.
 | Helm release | Chart                | Purpose                                                                |
 | ------------ | -------------------- | ---------------------------------------------------------------------- |
 | `postgres`   | `bitnami/postgresql` | Backing store. Three DBs: `kratos`, `hydra`, `keto`.                   |
-| `kratos`     | `ory/kratos`         | Identity service. Public on `auth.monsieurtis.com`.                    |
-| `hydra`      | `ory/hydra`          | OAuth2 / OIDC. Public on `id.monsieurtis.com`.                         |
+| `kratos`     | `ory/kratos`         | Identity service. Public on `login.monsieurtis.com`.                    |
+| `hydra`      | `ory/hydra`          | OAuth2 / OIDC issuer. Public on `oauth.monsieurtis.com`.                |
 | `keto`       | `ory/keto`           | Permission service (ReBAC). Cluster-internal.                          |
-| `crocus`     | inline Deployment    | Login / consent / denied / admin UI. Public on `auth.monsieurtis.com`. |
+| `crocus`     | inline Deployment    | Login / consent / denied / admin UI. Public on `login.monsieurtis.com`. |
 
 Also creates Hydra OAuth2 clients for `linlin` and `harley`, and seeds the
 initial Keto admin tuple.
@@ -43,13 +43,13 @@ without defaults: `domain`, `postgres_password`, `kratos_cookie_secret`,
 `google_oauth_client_secret`. `cluster_name` defaults to `monsieurtis` and must match
 `infra/cloud`. In CI/CD these resolve from 1Password.
 
-The `auth` and `id` subdomains are exposed by `infra/cloud` (`var.subdomains`),
+The `login` and `oauth` subdomains are exposed by `infra/cloud` (`var.subdomains`),
 not here.
 
 ## Bootstrap order
 
 1. First `terraform apply` deploys Postgres, Kratos, Hydra, Keto, Crocus.
-2. Register the **first user** manually by visiting `https://auth.monsieurtis.com/registration`.
+2. Register the **first user** manually by visiting `https://login.monsieurtis.com/registration`.
 3. Grab that user's Kratos identity ID:
     ```bash
     kubectl exec -n identity deploy/kratos -- kratos list identities --format=json | jq '.identities[0].id'
@@ -57,4 +57,4 @@ not here.
 4. Set `initial_admin_kratos_id = "<id>"` in `terraform.tfvars` and re-apply.
    This seeds the admin tuple in Keto and grants access to `linlin` + `harley`.
 5. From then on, manage user access via the Crocus admin UI at
-   `https://auth.monsieurtis.com/admin/users`.
+   `https://login.monsieurtis.com/admin/users`.
