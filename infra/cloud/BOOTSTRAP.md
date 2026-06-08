@@ -34,8 +34,11 @@ End-to-end guide to bring up Monsieur Tis `infra/cloud` project from nothing: ex
 
 - [ ] Profile → API Tokens → **Create token** with these scopes on `monsieurtis.com`:
     - Account → Cloudflare Tunnel → Edit
+    - Account → Email Routing Adresses → Edit
     - Zone → DNS → Edit
     - Zone → Zone → Read
+    - Zone → Email Routing Rules → Edit
+    - Zone → Zone Settings → Edit
 - [ ] Capture **Account ID** (right sidebar of any zone overview) and **Zone ID** (zone overview page).
 
 ### 4. SSH key for the exit-node VPS
