@@ -13,7 +13,6 @@ resource "kubernetes_secret" "hydra_secrets" {
   data = {
     dsn           = local.hydra_dsn
     secretsSystem = var.hydra_system_secret
-    # `cookie` falls back to `system` if unset; for clarity we set both explicitly.
     secretsCookie = var.hydra_system_secret
   }
 }

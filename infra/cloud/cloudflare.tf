@@ -46,3 +46,120 @@ resource "cloudflare_dns_record" "apps" {
   proxied = true
   ttl     = 1
 }
+
+################################
+#         ZONE SECURITY        #
+################################
+
+# Full (Strict): Cloudflare <-> origin is encrypted and the origin cert is validated.
+# Safe here because the tunnel terminates at cfargotunnel.com with a valid Cloudflare cert.
+resource "cloudflare_zone_setting" "ssl" {
+  zone_id    = var.cloudflare_zone_id
+  setting_id = "ssl"
+  value      = "strict"
+}
+
+# Redirect plain HTTP to HTTPS at the edge.
+resource "cloudflare_zone_setting" "always_use_https" {
+  zone_id    = var.cloudflare_zone_id
+  setting_id = "always_use_https"
+  value      = "on"
+}
+
+# HSTS: instruct browsers to only use HTTPS for this domain. Note that `preload` +
+# `include_subdomains` is a one-way commitment once browsers cache it -- any subdomain
+# that ever needs to serve plain HTTP must be excluded before enabling these.
+resource "cloudflare_zone_setting" "hsts" {
+  zone_id    = var.cloudflare_zone_id
+  setting_id = "security_header"
+  value = {
+    strict_transport_security = {
+      enabled            = true
+      max_age            = 31536000
+      include_subdomains = true
+      preload            = true
+      nosniff            = true
+    }
+  }
+}
+
+################################
+#       EMAIL ROUTING.         #
+################################
+# Inbound mail at `*@<var.domain>` lands on Cloudflare's MX servers and is forwarded to a
+# verified Gmail. Lets us own `support@monsieurtis.com` (and any future alias) for free
+# without running an SMTP/IMAP server. Sending is delegated to Resend, configured in
+# `infra/identity` since it's tied to Kratos.
+
+# Initializes the zone's email routing settings entry.
+resource "cloudflare_email_routing_settings" "monsieurtis" {
+  zone_id = var.cloudflare_zone_id
+}
+
+# Provisions Cloudflare's MX + SPF DNS records on the zone, which activates Email Routing.
+# The auto-managed SPF (`v=spf1 include:_spf.mx.cloudflare.net ~all`) must be merged with
+# Resend's `include:_spf.resend.com` in the Cloudflare dashboard once Resend is added — TF
+# does not manage the record contents directly.
+resource "cloudflare_email_routing_dns" "monsieurtis" {
+  zone_id = var.cloudflare_zone_id
+  name    = var.domain
+
+  depends_on = [cloudflare_email_routing_settings.monsieurtis]
+}
+
+# Verified destination mailbox. First apply triggers a confirmation email to
+# `var.email_routing_destination` — the link must be clicked manually before forwarding
+# starts (Cloudflare silently drops mail to unverified destinations).
+resource "cloudflare_email_routing_address" "destination" {
+  account_id = var.cloudflare_account_id
+  email      = var.email_routing_destination
+}
+
+# Per-alias forwarding rules: `<key>@<var.domain>` → <value>.
+resource "cloudflare_email_routing_rule" "aliases" {
+  for_each = var.email_routing_aliases
+
+  zone_id  = var.cloudflare_zone_id
+  name     = "Forward ${each.key}@${var.domain}"
+  enabled  = true
+  priority = 0
+
+  matchers = [{
+    type  = "literal"
+    field = "to"
+    value = "${each.key}@${var.domain}"
+  }]
+
+  actions = [{
+    type  = "forward"
+    value = [each.value]
+  }]
+
+  depends_on = [
+    cloudflare_email_routing_dns.monsieurtis,
+    cloudflare_email_routing_address.destination,
+  ]
+}
+
+# Catch-all: any `*@<var.domain>` not matched by an alias rule falls back here.
+resource "cloudflare_email_routing_catch_all" "monsieurtis" {
+  count = var.email_routing_catch_all == null ? 0 : 1
+
+  zone_id = var.cloudflare_zone_id
+  name    = "Catch-all"
+  enabled = true
+
+  matchers = [{
+    type = "all"
+  }]
+
+  actions = [{
+    type  = "forward"
+    value = [var.email_routing_catch_all]
+  }]
+
+  depends_on = [
+    cloudflare_email_routing_dns.monsieurtis,
+    cloudflare_email_routing_address.destination,
+  ]
+}

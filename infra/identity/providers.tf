@@ -23,7 +23,7 @@ provider "kubernetes" {
 }
 
 provider "helm" {
-  kubernetes {
+  kubernetes = {
     host                   = local.cluster.server
     client_certificate     = base64decode(local.user["client-certificate-data"])
     client_key             = base64decode(local.user["client-key-data"])
