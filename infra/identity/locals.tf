@@ -1,6 +1,11 @@
 locals {
-  auth_host = "auth.${var.domain}"
-  id_host   = "id.${var.domain}"
+  # login.<domain>  — human-facing identity UI (Kratos + Crocus). Where humans
+  #                   sign up, log in, manage their account.
+  # oauth.<domain>  — machine-facing OAuth2/OIDC issuer (Hydra). The `iss`
+  #                   claim in every issued token points here; OIDC discovery
+  #                   and JWKS live at /.well-known/* on this host.
+  login_host = "login.${var.domain}"
+  oauth_host = "oauth.${var.domain}"
 
   # In-cluster DNS — used by Hydra → Kratos, by Crocus → admin APIs, by apps → Keto.
   kratos_public_svc = "http://kratos-public.${var.namespace}.svc.cluster.local"
@@ -24,17 +29,17 @@ locals {
   google_jsonnet_b64 = filebase64("${path.module}/config/google.jsonnet")
 
   kratos_config = templatefile("${path.module}/config/kratos.yaml.tftpl", {
-    auth_host          = local.auth_host
-    kratos_public_url  = "https://${local.auth_host}"
+    login_host         = local.login_host
+    kratos_public_url  = "https://${local.login_host}"
     google_jsonnet_b64 = local.google_jsonnet_b64
     smtp_from_address  = var.smtp_from_address
     hydra_admin_url    = local.hydra_admin_svc
   })
 
   hydra_config = templatefile("${path.module}/config/hydra.yaml.tftpl", {
-    auth_host  = local.auth_host
-    id_host    = local.id_host
-    public_url = "https://${local.id_host}"
+    login_host = local.login_host
+    oauth_host = local.oauth_host
+    public_url = "https://${local.oauth_host}"
   })
 
   keto_config = templatefile("${path.module}/config/keto.yaml.tftpl", {

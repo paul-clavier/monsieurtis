@@ -1,15 +1,15 @@
-output "auth_host" {
-  description = "Public hostname serving Kratos public API + Crocus UI."
-  value       = local.auth_host
+output "login_host" {
+  description = "Public hostname serving Kratos public API + Crocus UI (human-facing identity)."
+  value       = local.login_host
 }
 
-output "id_host" {
-  description = "Public hostname serving Hydra OAuth2 endpoints."
-  value       = local.id_host
+output "oauth_host" {
+  description = "Public hostname serving Hydra OAuth2 endpoints. This is also the OIDC `iss` claim in issued tokens, and the host that publishes /.well-known/openid-configuration + /.well-known/jwks.json."
+  value       = local.oauth_host
 }
 
 output "oauth_client_secrets" {
-  description = "Map of OAuth2 client_id → Kubernetes Secret name holding the credentials. Consumed by each app's deployment."
+  description = "Map of confidential-client client_id → K8s Secret name (in the identity namespace) holding its credentials. Public (PKCE/SPA) clients have no entry — they hold no secret."
   value       = { for k, s in kubernetes_secret.client_credentials : k => s.metadata[0].name }
 }
 

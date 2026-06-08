@@ -15,14 +15,14 @@ serve:
             enabled: false
 
 urls:
-    # Hydra delegates login + consent to Crocus, served on auth.<domain>.
-    login:   https://${auth_host}/login
-    consent: https://${auth_host}/consent
-    logout:  https://${auth_host}/logout
-    error:   https://${auth_host}/oauth-error
+    # Hydra delegates login + consent to Crocus, served on login.<domain>.
+    login:   https://${login_host}/login
+    consent: https://${login_host}/consent
+    logout:  https://${login_host}/logout
+    error:   https://${login_host}/oauth-error
 
     self:
-        issuer: https://${id_host}
+        issuer: https://${oauth_host}
         public: ${public_url}
 
 oidc:

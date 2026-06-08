@@ -40,7 +40,7 @@ resource "kubernetes_deployment" "crocus" {
           # All admin URLs are in-cluster — secrets never leave the namespace.
           env {
             name  = "KRATOS_PUBLIC_URL"
-            value = "https://${local.auth_host}"
+            value = "https://${local.login_host}"
           }
           env {
             name  = "KRATOS_ADMIN_URL"
@@ -60,7 +60,7 @@ resource "kubernetes_deployment" "crocus" {
           }
           env {
             name  = "PUBLIC_AUTH_ORIGIN"
-            value = "https://${local.auth_host}"
+            value = "https://${local.login_host}"
           }
 
           resources {

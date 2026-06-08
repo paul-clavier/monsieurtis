@@ -17,7 +17,7 @@ variable "namespace" {
 }
 
 variable "domain" {
-  description = "Base apex domain (e.g. monsieurtis.com). Subdomains derived: auth.<domain>, id.<domain>."
+  description = "Base apex domain (e.g. monsieurtis.com). Subdomains derived: login.<domain> (human-facing identity UI), oauth.<domain> (OIDC issuer + JWKS)."
   type        = string
 }
 
@@ -89,18 +89,32 @@ variable "initial_admin_kratos_id" {
 }
 
 variable "registered_apps" {
-  description = "OAuth2 clients to register in Hydra. The `redirect_uris` are app callback URLs."
+  description = <<-EOT
+    OAuth2 clients to register in Hydra.
+
+    - `type = "public"`     SPA / mobile / any client that cannot keep a secret.
+                            Authenticates via PKCE; no client_secret is minted.
+    - `type = "confidential"` Server-side client. A random client_secret is generated
+                            and stored in a K8s Secret `hydra-client-<id>` for the
+                            app to mount.
+
+    Resource servers (APIs that only validate access tokens) are NOT OAuth clients
+    and do not belong here — they just trust Hydra's JWKS at `https://<oauth_host>/.well-known/jwks.json`.
+  EOT
   type = map(object({
+    type          = string
     redirect_uris = list(string)
     scopes        = optional(string, "openid offline_access profile email")
   }))
   default = {
     linlin = {
-      redirect_uris = ["https://api-linlin.monsieurtis.com/auth/callback"]
+      type          = "public"
+      redirect_uris = ["https://linlin.monsieurtis.com/auth/callback"]
     }
-    harley = {
-      redirect_uris = ["https://harley.monsieurtis.com/auth/callback"]
-    }
+  }
+  validation {
+    condition     = alltrue([for c in var.registered_apps : contains(["public", "confidential"], c.type)])
+    error_message = "Each registered app must declare type = \"public\" or \"confidential\"."
   }
 }
 
