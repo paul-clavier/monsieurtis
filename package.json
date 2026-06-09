@@ -3,6 +3,7 @@
     "private": true,
     "workspaces": {
         "packages": [
+            "apps/crocus",
             "apps/harley",
             "apps/linlin/interfaces",
             "apps/linlin/linlin-server",

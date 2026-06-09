@@ -10,7 +10,20 @@ permissions:
     contents: read
 
 jobs:
+    # Publish the Crocus image before the identity apply so the tag Terraform
+    # references already exists in ghcr. Identity-only: skipped on cloud.
+    build-crocus:
+        if: github.ref_name == 'infra_identity_main'
+        uses: ./.github/workflows/crocus-publish.yml
+        with:
+            image: ghcr.io/monsieurtis/crocus:${{ github.sha }}
+        secrets: inherit
+
     apply:
+        needs: [build-crocus]
+        # Run after the publish on identity; still run on cloud (where the
+        # publish is skipped). Never apply if the publish actually failed.
+        if: ${{ !cancelled() && needs.build-crocus.result != 'failure' }}
         runs-on: ubuntu-latest
         environment: production
         # One apply per branch/project at a time; never cancel a running apply.
@@ -40,6 +53,8 @@ jobs:
             TF_VAR_google_oauth_client_id: ${{ github.ref_name == 'infra_identity_main' && secrets.GOOGLE_OAUTH_CLIENT_ID || '' }}
             TF_VAR_google_oauth_client_secret: ${{ github.ref_name == 'infra_identity_main' && secrets.GOOGLE_OAUTH_CLIENT_SECRET || '' }}
             TF_VAR_smtp_connection_uri: ${{ github.ref_name == 'infra_identity_main' && secrets.SMTP_CONNECTION_URI || '' }}
+            # Pin the deploy to the immutable image just published by build-crocus.
+            TF_VAR_crocus_image: ${{ github.ref_name == 'infra_identity_main' && format('ghcr.io/monsieurtis/crocus:{0}', github.sha) || '' }}
         steps:
             - uses: actions/checkout@v4
 
