@@ -3,6 +3,9 @@
     "version": "0.0.0",
     "private": true,
     "type": "module",
+    "scripts": {
+        "typecheck": "tsc --noEmit"
+    },
     "exports": {
         ".": "./src/index.ts",
         "./nest": "./src/nest/index.ts",
@@ -17,9 +20,15 @@
         "@tanstack/react-router": "catalog:tanstack"
     },
     "peerDependenciesMeta": {
-        "@nestjs/common": { "optional": true },
-        "react": { "optional": true },
-        "@tanstack/react-router": { "optional": true }
+        "@nestjs/common": {
+            "optional": true
+        },
+        "react": {
+            "optional": true
+        },
+        "@tanstack/react-router": {
+            "optional": true
+        }
     },
     "devDependencies": {
         "@monsieurtis/tsconfig": "workspace:*",

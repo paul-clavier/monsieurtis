@@ -42,72 +42,7 @@ jobs:
                   fi
                   echo "projects=$projects" >> "$GITHUB_OUTPUT"
 
-    lint:
-        needs: detect-changes
-        if: needs.detect-changes.outputs.projects != '[]'
-        runs-on: ubuntu-latest
-        strategy:
-            fail-fast: false
-            matrix:
-                project: ${{ fromJson(needs.detect-changes.outputs.projects) }}
-        steps:
-            - uses: actions/checkout@v4
-            - uses: terraform-linters/setup-tflint@v6
-              with:
-                  tflint_version: latest
-            - name: tflint --init
-              working-directory: infra/${{ matrix.project }}
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: tflint --init
-            - name: tflint
-              working-directory: infra/${{ matrix.project }}
-              run: tflint --recursive --format=compact
-
-    validate:
-        needs: detect-changes
-        if: needs.detect-changes.outputs.projects != '[]'
-        runs-on: ubuntu-latest
-        strategy:
-            fail-fast: false
-            matrix:
-                project: ${{ fromJson(needs.detect-changes.outputs.projects) }}
-        steps:
-            - uses: actions/checkout@v4
-            - uses: opentofu/setup-opentofu@v1
-              with:
-                  tofu_version: 1.9.1
-                  tofu_wrapper: false
-            - name: tofu fmt
-              working-directory: infra/${{ matrix.project }}
-              run: tofu fmt -check -recursive -diff
-            - name: tofu init
-              working-directory: infra/${{ matrix.project }}
-              run: tofu init -backend=false -input=false -lockfile=readonly
-            - name: tofu validate
-              working-directory: infra/${{ matrix.project }}
-              run: tofu validate -no-color
-
-    security:
-        needs: detect-changes
-        if: needs.detect-changes.outputs.projects != '[]'
-        runs-on: ubuntu-latest
-        strategy:
-            fail-fast: false
-            matrix:
-                project: ${{ fromJson(needs.detect-changes.outputs.projects) }}
-        steps:
-            - uses: actions/checkout@v4
-            - name: trivy config scan
-              uses: aquasecurity/trivy-action@v0.36.0
-              with:
-                  scan-type: config
-                  scan-ref: infra/${{ matrix.project }}
-                  exit-code: "1"
-                  severity: HIGH,CRITICAL
-                  format: table
-
-    plan:
+    checks:
         needs: detect-changes
         # Skip on fork PRs: plan needs secrets, which must never reach a fork.
         if: >-
@@ -146,12 +81,46 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
+            # --- lint ---
+            - uses: terraform-linters/setup-tflint@v6
+              with:
+                  tflint_version: latest
+            - name: tflint --init
+              working-directory: infra/${{ matrix.project }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: tflint --init
+            - name: tflint
+              working-directory: infra/${{ matrix.project }}
+              run: tflint --recursive --format=compact
+
+            # --- validate ---
             - uses: opentofu/setup-opentofu@v1
               with:
                   tofu_version: 1.9.1
                   tofu_wrapper: false
+            - name: tofu fmt
+              working-directory: infra/${{ matrix.project }}
+              run: tofu fmt -check -recursive -diff
+            - name: tofu init (validate)
+              working-directory: infra/${{ matrix.project }}
+              run: tofu init -backend=false -input=false -lockfile=readonly
+            - name: tofu validate
+              working-directory: infra/${{ matrix.project }}
+              run: tofu validate -no-color
 
-            - name: tofu init
+            # --- security ---
+            - name: trivy config scan
+              uses: aquasecurity/trivy-action@v0.36.0
+              with:
+                  scan-type: config
+                  scan-ref: infra/${{ matrix.project }}
+                  exit-code: "1"
+                  severity: HIGH,CRITICAL
+                  format: table
+
+            # --- plan ---
+            - name: tofu init (plan)
               working-directory: infra/${{ matrix.project }}
               run: tofu init -input=false -lockfile=readonly
 
