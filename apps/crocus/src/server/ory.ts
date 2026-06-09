@@ -10,8 +10,11 @@
  *   KRATOS_ADMIN_URL    → http://kratos-admin.identity.svc (in-cluster only)
  *   HYDRA_ADMIN_URL     → http://hydra-admin.identity.svc:4445
  *   KETO_READ_URL       → http://keto-read.identity.svc:80
- *   KETO_WRITE_URL      → http://keto-write.identity.svc:80
  *   PUBLIC_AUTH_ORIGIN  → https://login.monsieurtis.com
+ *
+ * Crocus is read-only against Keto — permission changes are managed
+ * declaratively in `infra/identity/variables.tf` (`user_groups` + the
+ * reconcile Job). No KETO_WRITE_URL is wired here.
  */
 
 import type { KetoCheckClient } from "@monsieurtis/ory";
@@ -27,12 +30,10 @@ export const oryConfig = {
     kratosAdminUrl: required("KRATOS_ADMIN_URL"),
     hydraAdminUrl: required("HYDRA_ADMIN_URL"),
     ketoReadUrl: required("KETO_READ_URL"),
-    ketoWriteUrl: required("KETO_WRITE_URL"),
     publicAuthOrigin: required("PUBLIC_AUTH_ORIGIN"),
 } as const;
 
 export const ketoRead: KetoCheckClient = { readUrl: oryConfig.ketoReadUrl };
-export const ketoWrite = { writeUrl: oryConfig.ketoWriteUrl };
 export const kratosPublic = { publicUrl: oryConfig.kratosPublicUrl };
 export const kratosAdmin = { adminUrl: oryConfig.kratosAdminUrl };
 export const hydraAdmin = { adminUrl: oryConfig.hydraAdminUrl };

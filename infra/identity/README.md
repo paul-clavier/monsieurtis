@@ -12,16 +12,18 @@ cluster must exist before identity can plan.
 
 ## What it deploys
 
-| Helm release | Chart                | Purpose                                                                |
-| ------------ | -------------------- | ---------------------------------------------------------------------- |
-| `postgres`   | `bitnami/postgresql` | Backing store. Three DBs: `kratos`, `hydra`, `keto`.                   |
-| `kratos`     | `ory/kratos`         | Identity service. Public on `login.monsieurtis.com`.                    |
-| `hydra`      | `ory/hydra`          | OAuth2 / OIDC issuer. Public on `oauth.monsieurtis.com`.                |
-| `keto`       | `ory/keto`           | Permission service (ReBAC). Cluster-internal.                          |
-| `crocus`     | inline Deployment    | Login / consent / denied / admin UI. Public on `login.monsieurtis.com`. |
+| Helm release | Chart                | Purpose                                                         |
+| ------------ | -------------------- | --------------------------------------------------------------- |
+| `postgres`   | `bitnami/postgresql` | Backing store. Three DBs: `kratos`, `hydra`, `keto`.            |
+| `kratos`     | `ory/kratos`         | Identity service. Public on `login.monsieurtis.com`.            |
+| `hydra`      | `ory/hydra`          | OAuth2 / OIDC issuer. Public on `oauth.monsieurtis.com`.        |
+| `keto`       | `ory/keto`           | Permission service (ReBAC). Cluster-internal.                   |
+| `crocus`     | inline Deployment    | Login / consent / denied UI. Public on `login.monsieurtis.com`. |
 
-Also creates Hydra OAuth2 clients for `linlin` and `harley`, and seeds the
-initial Keto admin tuple.
+Also creates Hydra OAuth2 clients for `linlin`, and runs a **reconcile Job**
+that materialises the access policy (`local.owner_email` + `var.user_groups`)
+into Keto on every apply — tuples removed from Terraform are deleted from
+Keto on the next run.
 
 ## Usage
 
@@ -48,13 +50,32 @@ not here.
 
 ## Bootstrap order
 
-1. First `terraform apply` deploys Postgres, Kratos, Hydra, Keto, Crocus.
-2. Register the **first user** manually by visiting `https://login.monsieurtis.com/registration`.
-3. Grab that user's Kratos identity ID:
-    ```bash
-    kubectl exec -n identity deploy/kratos -- kratos list identities --format=json | jq '.identities[0].id'
-    ```
-4. Set `initial_admin_kratos_id = "<id>"` in `terraform.tfvars` and re-apply.
-   This seeds the admin tuple in Keto and grants access to `linlin` + `harley`.
-5. From then on, manage user access via the Crocus admin UI at
-   `https://login.monsieurtis.com/admin/users`.
+1. First `tofu apply` deploys Postgres, Kratos, Hydra, Keto, Crocus. The
+   reconcile Job runs and writes group tuples (`monsieurtis_friends`,
+   `linlin_user`), but the owner lookup returns no identity (no one has
+   registered yet) and the Job logs "Owner not yet registered — skipping
+   owner tuples." That is expected.
+2. Register the owner by visiting `https://login.monsieurtis.com/registration`
+   and signing in with Google. Kratos creates an identity with
+   `traits.email = "plclavier@gmail.com"`.
+3. Re-apply (`tofu apply`). The reconcile Job resolves the owner by email
+   and writes `crocus-admin:platform#access@user:<id>` plus
+   `app:<X>#access@user:<id>` for every gated app — no identity-ID
+   juggling required.
+
+## Access policy (declarative)
+
+Permissions live in this Terraform root. There is no admin UI — change
+the code, open a PR, `tofu apply`.
+
+- **`local.owner_email`** (hardcoded in `keto.tf`) — single source of truth
+  for who the `monsieurtis_owner` is. The reconcile Job translates this
+  email into a Kratos identity ID at run time, so changing the email is a
+  one-line PR.
+- **`var.user_groups`** — map of `team:<name>`. Each entry lists `apps`
+  (subset of gated apps, or `["*"]` for all) and `member_ids` (Kratos IDs).
+- **`var.registered_apps[*].gated`** — set `false` for public apps so no
+  Keto tuples are written about them.
+
+The reconcile Job diffs the desired set against Keto and applies the
+delta — adding new tuples, removing ones no longer in Terraform.

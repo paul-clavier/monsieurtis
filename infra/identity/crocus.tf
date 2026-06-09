@@ -55,10 +55,6 @@ resource "kubernetes_deployment" "crocus" {
             value = local.keto_read_svc
           }
           env {
-            name  = "KETO_WRITE_URL"
-            value = local.keto_write_svc
-          }
-          env {
             name  = "PUBLIC_AUTH_ORIGIN"
             value = "https://${local.login_host}"
           }
