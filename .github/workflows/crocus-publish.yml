@@ -1,0 +1,49 @@
+name: crocus-publish
+
+# Builds and pushes the Crocus image to ghcr. Called by tofu-cd before the
+# identity apply (so the image exists when Terraform references it), and
+# available as a manual dispatch for ad-hoc publishes.
+on:
+    workflow_call:
+        inputs:
+            image:
+                description: Fully-qualified image ref to push (e.g. ghcr.io/monsieurtis/crocus:<sha>).
+                required: true
+                type: string
+    workflow_dispatch:
+        inputs:
+            image:
+                description: Fully-qualified image ref to push.
+                required: true
+                type: string
+                default: ghcr.io/monsieurtis/crocus:latest
+
+jobs:
+    publish:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: docker/setup-buildx-action@v3
+
+            # Pushing to ghcr.io/monsieurtis (a different owner than this repo)
+            # requires a PAT with write:packages — the default GITHUB_TOKEN can
+            # only write to its own owner's namespace.
+            - uses: docker/login-action@v3
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GHCR_TOKEN }}
+
+            # Build context is the monorepo root so the Dockerfile can copy
+            # workspace siblings (@monsieurtis/ui, @monsieurtis/ory, …).
+            - uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: apps/crocus/Dockerfile
+                  push: true
+                  tags: |
+                      ${{ inputs.image }}
+                      ghcr.io/monsieurtis/crocus:latest
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max

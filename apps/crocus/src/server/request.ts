@@ -5,9 +5,6 @@
  *
  * Server-only — do not import from a component body.
  */
-import { getHeaders } from "@tanstack/react-start/server";
+import { getRequestHeader } from "@tanstack/react-start/server";
 
-export const getCookieHeader = (): string => {
-    const headers = getHeaders();
-    return (headers.cookie ?? headers.Cookie ?? "") as string;
-};
+export const getCookieHeader = (): string => getRequestHeader("cookie") ?? "";
