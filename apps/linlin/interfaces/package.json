@@ -2,6 +2,9 @@
     "name": "@monsieurtis/linlin-interfaces",
     "private": true,
     "type": "module",
+    "scripts": {
+        "typecheck": "tsc --noEmit"
+    },
     "dependencies": {
         "@monsieurtis/core": "workspace:*",
         "zod": "catalog:zod"
