@@ -8,9 +8,7 @@ locals {
   oauth_host = "oauth.${var.domain}"
 
   # In-cluster DNS — used by Hydra → Kratos, by Crocus → admin APIs, by apps → Keto.
-  kratos_public_svc = "http://kratos-public.${var.namespace}.svc.cluster.local"
   kratos_admin_svc  = "http://kratos-admin.${var.namespace}.svc.cluster.local"
-  hydra_public_svc  = "http://hydra-public.${var.namespace}.svc.cluster.local:4444"
   hydra_admin_svc   = "http://hydra-admin.${var.namespace}.svc.cluster.local:4445"
   keto_read_svc     = "http://keto-read.${var.namespace}.svc.cluster.local:80"
   keto_write_svc    = "http://keto-write.${var.namespace}.svc.cluster.local:80"
