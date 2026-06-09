@@ -158,7 +158,7 @@ variable "chart_versions" {
     keto       = string
   })
   default = {
-    postgresql = "16.7.30"
+    postgresql = "16.3.0"
     kratos     = "0.59.1"
     hydra      = "0.62.0"
     keto       = "0.45.0"
