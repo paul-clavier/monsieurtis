@@ -1,6 +1,12 @@
-import { Button } from "@monsieurtis/ui/components/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@monsieurtis/ui/components/card";
 import { acceptLoginRequest, getLoginRequest, whoami } from "@monsieurtis/ory";
+import { Button } from "@monsieurtis/ui/components/button";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@monsieurtis/ui/components/card";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
@@ -26,11 +32,18 @@ const loginSearch = z.object({
     flow: z.string().optional(),
 });
 
+/**
+ * A. ?login_challenge=… from Hydra + existing Kratos session → acceptLoginRequest(hydra), redirect back to the relying party.
+ * B. ?login_challenge=… + no session → bounce to Kratos /self-service/login/browser with return_to looping back to this same URL.
+ * C. No challenge, no session → SSO-style bounce to Kratos that lands on /.
+ */
 const handleLogin = createServerFn({ method: "GET" })
     .validator((d: unknown) => loginSearch.parse(d))
     .handler(async ({ data }) => {
         const cookieHeader = getCookieHeader();
-        const session = await whoami(kratosPublic, cookieHeader).catch(() => null);
+        const session = await whoami(kratosPublic, cookieHeader).catch(
+            () => null,
+        );
 
         // Case A: Kratos initialised a login flow whose `ui_url` is /login —
         // render the form. (For v1 we just acknowledge it; future polish
@@ -40,11 +53,15 @@ const handleLogin = createServerFn({ method: "GET" })
         // Case B: Hydra is asking for a login on behalf of an OAuth client.
         if (data.login_challenge) {
             if (session) {
-                const accept = await acceptLoginRequest(hydraAdmin, data.login_challenge, {
-                    subject: session.identity.id,
-                    remember: true,
-                    remember_for: 3600,
-                });
+                const accept = await acceptLoginRequest(
+                    hydraAdmin,
+                    data.login_challenge,
+                    {
+                        subject: session.identity.id,
+                        remember: true,
+                        remember_for: 3600,
+                    },
+                );
                 throw redirect({ href: accept.redirect_to });
             }
 
@@ -62,7 +79,9 @@ const handleLogin = createServerFn({ method: "GET" })
         // Case C: no challenge and no flow — pure landing on /login.
         if (session) throw redirect({ to: "/" });
 
-        const returnTo = encodeURIComponent(`${process.env.PUBLIC_AUTH_ORIGIN}/`);
+        const returnTo = encodeURIComponent(
+            `${process.env.PUBLIC_AUTH_ORIGIN}/`,
+        );
         throw redirect({
             href: `${process.env.KRATOS_PUBLIC_URL}/self-service/login/browser?return_to=${returnTo}`,
         });

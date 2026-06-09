@@ -33,7 +33,7 @@ Outbound: Kratos  (or Gmail "Send mail as")  ──►  Resend SMTP  ──►  
     - Add them in Cloudflare DNS (proxied **off** — these are mail records, not HTTP).
     - ⚠️ **SPF merge**: `cloudflare_email_routing_dns` already added an SPF record (`v=spf1 include:_spf.mx.cloudflare.net ~all`). A domain may only have one SPF `TXT` record — edit the existing one in the Cloudflare dashboard to merge Resend's include, e.g. `v=spf1 include:_spf.mx.cloudflare.net include:_spf.resend.com ~all`. (Terraform does not own the record contents, so no drift.)
     - Wait for Resend's domain status to flip to **Verified** (< 5 min once DNS propagates).
-- [ ] (Optional) Configure Gmail **"Send mail as"** inside `tis.monsieurtis@gmail.com` using Resend SMTP (`smtp.resend.com:465`, username `resend`, password = a Resend API key from step 4). Lets you reply *from* `support@monsieurtis.com` directly inside Gmail.
+- [ ] (Optional) Configure Gmail **"Send mail as"** inside `tis.monsieurtis@gmail.com` using Resend SMTP (`smtp.resend.com:465`, username `resend`, password = a Resend API key from step 4). Lets you reply _from_ `support@monsieurtis.com` directly inside Gmail.
 
 ### 3. Google OAuth 2.0 client
 
@@ -78,15 +78,15 @@ openssl rand -base64 24
 
 Add to the existing `MonsieurTis` vault (Password type, value in the `password` field). The sync script ([scripts/sync-1password-with-git.sh](../../scripts/sync-1password-with-git.sh)) matches each GitHub secret `FOO` against a vault item titled `FOO` or `prefix.FOO` (suffix after the last dot must be unique).
 
-| Title                              | Value                                                    |
-| ---------------------------------- | -------------------------------------------------------- |
-| `ory.ORY_POSTGRES_PASSWORD`        | postgres password from step 5                            |
-| `ory.KRATOS_COOKIE_SECRET`         | cookie secret from step 5                                |
-| `ory.KRATOS_CIPHER_SECRET`         | cipher secret from step 5 (exactly 32 chars)             |
-| `ory.HYDRA_SYSTEM_SECRET`          | hydra secret from step 5                                 |
-| `google.GOOGLE_OAUTH_CLIENT_ID`    | from step 3                                              |
-| `google.GOOGLE_OAUTH_CLIENT_SECRET`| from step 3                                              |
-| `resend.SMTP_CONNECTION_URI`       | `smtps://resend:<RESEND_API_KEY>@smtp.resend.com:465`    |
+| Title                               | Value                                                 |
+| ----------------------------------- | ----------------------------------------------------- |
+| `ory.ORY_POSTGRES_PASSWORD`         | postgres password from step 5                         |
+| `ory.KRATOS_COOKIE_SECRET`          | cookie secret from step 5                             |
+| `ory.KRATOS_CIPHER_SECRET`          | cipher secret from step 5 (exactly 32 chars)          |
+| `ory.HYDRA_SYSTEM_SECRET`           | hydra secret from step 5                              |
+| `google.GOOGLE_OAUTH_CLIENT_ID`     | from step 3                                           |
+| `google.GOOGLE_OAUTH_CLIENT_SECRET` | from step 3                                           |
+| `resend.SMTP_CONNECTION_URI`        | `smtps://resend:<RESEND_API_KEY>@smtp.resend.com:465` |
 
 ### 7. Sync 1Password → GitHub secrets
 
@@ -142,9 +142,17 @@ kubectl -n identity get ingress            # login.monsieurtis.com, oauth.monsie
 # and watch the Resend dashboard logs.
 ```
 
-### Seed the first admin
+### Seed the owner
 
-After the first apply, the Keto admin tuple is empty. Follow the [README.md "Bootstrap order"](README.md#bootstrap-order) steps — register a user via the public flow, grab their Kratos identity ID, set `initial_admin_kratos_id` in 1Password (`ory.INITIAL_ADMIN_KRATOS_ID`) + tofu-cd.yml, and re-apply.
+After the first apply, no owner identity exists yet (the reconcile Job
+logs "Owner not yet registered — skipping owner tuples"). To finish
+bootstrap:
+
+1. Visit `https://login.monsieurtis.com/registration` and sign in with
+   Google using the email hardcoded as `local.owner_email` in
+   `infra/identity/keto.tf`.
+2. Re-run `tofu apply`. The reconcile Job resolves the owner by email and
+   writes the owner tuples (Crocus admin + every gated app).
 
 ---
 

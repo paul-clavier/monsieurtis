@@ -54,47 +54,106 @@ resource "helm_release" "keto" {
 }
 
 ###############################################################################
-# Seed Zanzibar tuples.
+# Reconcile Zanzibar tuples — declarative source of truth.
 #
-# Tuples are declared in `config/keto-tuples.yaml.tftpl` (one row per
-# Zanzibar relation). A Kubernetes Job mounts the rendered list as JSON and
-# PUTs each row against Keto's local write API. PUT semantics make the Job
-# idempotent — re-applies and partial failures converge to the same state.
+# Two inputs shape the desired tuple set:
 #
-# Empty `initial_admin_kratos_id` is the bootstrap state: the YAML references
-# `${admin_id}`, so before that variable is set the seed Job is skipped
-# entirely. Fill it in after the first user registers and re-apply.
+#   - local.owner_email     → hardcoded. The reconcile Job resolves the Kratos
+#                             identity for this email at run time and writes:
+#                               crocus-admin:platform#access@user:<id>
+#                               app:<X>#access@user:<id>      (one per gated app)
+#
+#   - var.user_groups       → team membership + per-app access (plan-time):
+#                               team:<group>#member@user:<X>          (per member)
+#                               app:<X>#access@team:<group>#member    (per group×app)
+#
+# A Kubernetes Job LISTs current tuples in the managed namespaces (app, team,
+# crocus-admin), unions the static desired set (from a ConfigMap) with the
+# owner tuples it derives at run time, diffs against current, then PUTs the
+# missing rows and DELETEs the extras. Removing a row from Terraform — or
+# changing the owner email — converges Keto on the next apply.
+#
+# Bootstrap: on the very first apply, the owner has not yet registered.
+# The lookup returns no identity, the Job skips owner tuples (with a log
+# line) and reconciles the group tuples. Register via Google at
+# login.monsieurtis.com and re-apply; the next reconcile picks the owner
+# up automatically.
 ###############################################################################
 
 locals {
-  seed_tuples = var.initial_admin_kratos_id == "" ? [] : yamldecode(templatefile(
-    "${path.module}/config/keto-tuples.yaml.tftpl",
-    { admin_id = var.initial_admin_kratos_id },
-  )).tuples
+  owner_email = "plclavier@gmail.com"
+
+  gated_apps = sort([for k, v in var.registered_apps : k if v.gated])
+
+  membership_tuples = flatten([
+    for name, g in var.user_groups : [
+      for uid in g.member_ids : {
+        namespace  = "team"
+        object     = name
+        relation   = "member"
+        subject_id = "user:${uid}"
+      }
+    ]
+  ])
+
+  group_app_tuples = flatten([
+    for name, g in var.user_groups : [
+      for app in(contains(g.apps, "*") ? local.gated_apps : g.apps) : {
+        namespace = "app"
+        object    = app
+        relation  = "access"
+        subject_set = {
+          namespace = "team"
+          object    = name
+          relation  = "member"
+        }
+      }
+    ]
+  ])
+
+  # Owner tuples are NOT in this list — they depend on a run-time Kratos
+  # lookup. The Job appends them after resolving the owner's identity.
+  desired_tuples = concat(local.membership_tuples, local.group_app_tuples)
 }
 
-resource "kubernetes_config_map" "keto_seed" {
-  count = length(local.seed_tuples) == 0 ? 0 : 1
-
+resource "kubernetes_config_map" "keto_reconcile_desired" {
   metadata {
-    name      = "keto-seed-tuples"
+    name      = "keto-reconcile-desired"
     namespace = kubernetes_namespace.identity.metadata[0].name
   }
 
   data = {
-    "tuples.json" = jsonencode(local.seed_tuples)
+    "desired.json" = jsonencode(local.desired_tuples)
   }
 }
 
-resource "kubernetes_job" "keto_seed" {
-  count = length(local.seed_tuples) == 0 ? 0 : 1
-
+resource "kubernetes_job" "keto_reconcile" {
   metadata {
-    # Job name is suffixed with a hash of the tuples, so any change to the
-    # YAML (or admin ID) spawns a fresh Job rather than complaining about
-    # an immutable spec.
-    name      = "keto-seed-${substr(sha256(jsonencode(local.seed_tuples)), 0, 10)}"
+    # Job name suffixed by a hash of every input that shapes the reconcile
+    # outcome: the static desired set, the owner email, and the list of
+    # gated apps that the owner gets access to. Any change to any of them
+    # spawns a fresh Job rather than colliding with the immutable spec.
+    name      = "keto-reconcile-${substr(sha256(jsonencode({
+      desired     = local.desired_tuples
+      owner_email = local.owner_email
+      owner_apps  = local.gated_apps
+    })), 0, 10)}"
     namespace = kubernetes_namespace.identity.metadata[0].name
+  }
+
+  # Cross-variable validation: every app referenced in user_groups.apps must
+  # be "*" or a key of a gated registered_app. Public apps cannot appear —
+  # they are unrestricted by construction. The check runs at plan time.
+  lifecycle {
+    precondition {
+      condition = alltrue([
+        for g in values(var.user_groups) : alltrue([
+          for app in g.apps :
+          app == "*" || try(var.registered_apps[app].gated, false)
+        ])
+      ])
+      error_message = "user_groups.apps may only reference \"*\" or the key of a gated entry in registered_apps."
+    }
   }
 
   spec {
@@ -107,42 +166,157 @@ resource "kubernetes_job" "keto_seed" {
         restart_policy = "OnFailure"
 
         container {
-          name = "seed"
-          # alpine ships neither curl nor jq by default, but adding them at
-          # startup is faster than maintaining a custom image. PUT semantics on
-          # Keto's write API make every row idempotent — partial failures and
-          # re-runs converge to the same state.
+          name = "reconcile"
+          # alpine + curl + jq is faster to maintain than a custom image.
+          # Operations are idempotent on Keto's write API (PUT and DELETE
+          # both converge), so partial failures and re-runs are safe.
           image = "alpine:3.20"
+
+          env {
+            name  = "KETO_READ"
+            value = local.keto_read_svc
+          }
+          env {
+            name  = "KETO_WRITE"
+            value = local.keto_write_svc
+          }
+          env {
+            name  = "KRATOS_ADMIN"
+            value = local.kratos_admin_svc
+          }
+          env {
+            name  = "OWNER_EMAIL"
+            value = local.owner_email
+          }
+          env {
+            name  = "OWNER_APPS_JSON"
+            value = jsonencode(local.gated_apps)
+          }
 
           command = ["/bin/sh", "-c"]
           args = [
             <<-EOT
               set -eu
               apk add --no-cache --quiet curl jq
-              jq -c '.[]' /seed/tuples.json | while read -r row; do
+
+              # Canonical projection of a tuple → stable, sortable JSON key.
+              # Keeps namespace/object/relation + exactly one of subject_id or
+              # subject_set; jq -S sorts keys for byte-identical comparison.
+              CANON='{namespace, object, relation} +
+                     (if .subject_id then {subject_id}
+                      else {subject_set: (.subject_set | {namespace, object, relation})}
+                      end)'
+
+              # --- Resolve owner Kratos ID by trait email.
+              # We list identities and match by traits.email rather than using
+              # the credentials_identifier filter — the latter only matches
+              # password identifiers, not OIDC subjects, so it would miss
+              # users who registered via Google. per_page=1000 is plenty at
+              # our scale; revisit pagination when the identity count nears
+              # this cap.
+              owner_id=""
+              if [ -n "$OWNER_EMAIL" ]; then
+                owner_id=$(curl -fsS "$KRATOS_ADMIN/admin/identities?per_page=1000" \
+                  | jq -r --arg e "$OWNER_EMAIL" '.[] | select(.traits.email == $e) | .id' \
+                  | head -n1)
+              fi
+
+              # --- Build full desired set: static (group) tuples + owner tuples
+              # derived from the resolved ID. If the owner has not registered
+              # yet, only the static set is reconciled.
+              if [ -n "$owner_id" ]; then
+                echo "Owner resolved: $OWNER_EMAIL → $owner_id"
+                jq --arg id "$owner_id" --argjson apps "$OWNER_APPS_JSON" '
+                  . + [{namespace:"crocus-admin", object:"platform", relation:"access", subject_id:"user:\($id)"}]
+                    + ($apps | map({namespace:"app", object:., relation:"access", subject_id:"user:\($id)"}))
+                ' /reconcile/desired.json > /tmp/desired.full.json
+              else
+                echo "Owner $OWNER_EMAIL not yet registered — skipping owner tuples."
+                cp /reconcile/desired.json /tmp/desired.full.json
+              fi
+
+              jq -cS ".[] | $CANON" /tmp/desired.full.json | sort > /tmp/desired.sorted
+
+              # --- Current set: paginate every managed namespace, project,
+              # canonicalize, dedupe, sort.
+              : > /tmp/current.raw
+              for ns in app team crocus-admin; do
+                page_token=""
+                while true; do
+                  url="$KETO_READ/relation-tuples?namespace=$ns&page_size=1000"
+                  [ -n "$page_token" ] && url="$url&page_token=$page_token"
+                  resp=$(curl -fsS "$url")
+                  echo "$resp" | jq -c '.relation_tuples[]' >> /tmp/current.raw
+                  page_token=$(echo "$resp" | jq -r '.next_page_token // ""')
+                  [ -z "$page_token" ] && break
+                done
+              done
+              jq -cS "$CANON" < /tmp/current.raw | sort -u > /tmp/current.sorted
+
+              comm -23 /tmp/desired.sorted /tmp/current.sorted > /tmp/to_add.jsonl
+              comm -13 /tmp/desired.sorted /tmp/current.sorted > /tmp/to_remove.jsonl
+
+              added=$(wc -l < /tmp/to_add.jsonl | tr -d ' ')
+              removed=$(wc -l < /tmp/to_remove.jsonl | tr -d ' ')
+              echo "Reconcile plan: +$added / -$removed"
+
+              # --- Apply PUTs.
+              while IFS= read -r row; do
+                [ -z "$row" ] && continue
+                echo "+ $row"
+                curl -fsS -X PUT \
+                  -H 'Content-Type: application/json' \
+                  -d "$row" \
+                  "$KETO_WRITE/admin/relation-tuples" > /dev/null
+              done < /tmp/to_add.jsonl
+
+              # --- Apply DELETEs. curl -G --data-urlencode handles colons /
+              # spaces in tuple values. Both subject_id and subject_set
+              # variants share the namespace/object/relation params; only the
+              # subject form differs.
+              while IFS= read -r row; do
+                [ -z "$row" ] && continue
+                echo "- $row"
                 ns=$(echo "$row" | jq -r '.namespace')
                 obj=$(echo "$row" | jq -r '.object')
                 rel=$(echo "$row" | jq -r '.relation')
-                sub=$(echo "$row" | jq -r '.subject_id')
-                echo "Writing $ns:$obj#$rel@$sub"
-                curl -fsS -X PUT \
-                  -H 'Content-Type: application/json' \
-                  -d "{\"namespace\":\"$ns\",\"object\":\"$obj\",\"relation\":\"$rel\",\"subject_id\":\"$sub\"}" \
-                  ${local.keto_write_svc}/admin/relation-tuples
-              done
+                if echo "$row" | jq -e '.subject_id' > /dev/null; then
+                  sub=$(echo "$row" | jq -r '.subject_id')
+                  curl -fsS -G -X DELETE \
+                    --data-urlencode "namespace=$ns" \
+                    --data-urlencode "object=$obj" \
+                    --data-urlencode "relation=$rel" \
+                    --data-urlencode "subject_id=$sub" \
+                    "$KETO_WRITE/admin/relation-tuples" > /dev/null
+                else
+                  ssns=$(echo "$row" | jq -r '.subject_set.namespace')
+                  ssobj=$(echo "$row" | jq -r '.subject_set.object')
+                  ssrel=$(echo "$row" | jq -r '.subject_set.relation')
+                  curl -fsS -G -X DELETE \
+                    --data-urlencode "namespace=$ns" \
+                    --data-urlencode "object=$obj" \
+                    --data-urlencode "relation=$rel" \
+                    --data-urlencode "subject_set.namespace=$ssns" \
+                    --data-urlencode "subject_set.object=$ssobj" \
+                    --data-urlencode "subject_set.relation=$ssrel" \
+                    "$KETO_WRITE/admin/relation-tuples" > /dev/null
+                fi
+              done < /tmp/to_remove.jsonl
+
+              echo "Reconcile complete."
             EOT
           ]
 
           volume_mount {
-            name       = "seed"
-            mount_path = "/seed"
+            name       = "reconcile"
+            mount_path = "/reconcile"
           }
         }
 
         volume {
-          name = "seed"
+          name = "reconcile"
           config_map {
-            name = kubernetes_config_map.keto_seed[0].metadata[0].name
+            name = kubernetes_config_map.keto_reconcile_desired.metadata[0].name
           }
         }
       }
@@ -151,5 +325,5 @@ resource "kubernetes_job" "keto_seed" {
 
   wait_for_completion = true
 
-  depends_on = [helm_release.keto]
+  depends_on = [helm_release.keto, helm_release.kratos]
 }
