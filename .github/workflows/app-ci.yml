@@ -1,0 +1,67 @@
+name: app-ci
+
+on:
+    pull_request:
+        branches:
+            - main
+
+permissions:
+    contents: read
+
+concurrency:
+    group: app-ci-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    format:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.13
+            - name: prettier --check
+              run: bunx prettier --ignore-unknown --check .
+
+    # Compute which packages need checking: those that changed, plus everything
+    # that transitively depends on them. See scripts/affected.ts.
+    affected:
+        runs-on: ubuntu-latest
+        outputs:
+            matrix: ${{ steps.compute.outputs.matrix }}
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0 # full history so `git merge-base` works
+            - uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.13
+            - id: compute
+              run: |
+                  matrix=$(bun scripts/affected.ts "origin/${{ github.base_ref }}")
+                  echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+                  echo "Affected matrix: $matrix"
+
+    check:
+        needs: affected
+        if: needs.affected.outputs.matrix != '{"include":[]}'
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix: ${{ fromJson(needs.affected.outputs.matrix) }}
+        name: check (${{ matrix.name }})
+        steps:
+            - uses: actions/checkout@v4
+            - uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: 1.3.13
+            - run: bun install --frozen-lockfile
+            # Run only the checks this package declares, in the order affected.ts
+            # listed them (prep steps like prisma:generate come first).
+            - name: Run checks
+              run: |
+                  for script in ${{ matrix.scripts }}; do
+                    echo "::group::bun run --filter '${{ matrix.name }}' $script"
+                    bun run --filter '${{ matrix.name }}' "$script"
+                    echo "::endgroup::"
+                  done

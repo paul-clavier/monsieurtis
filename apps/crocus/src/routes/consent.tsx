@@ -28,6 +28,13 @@ const consentSearch = z.object({
     consent_challenge: z.string().min(1),
 });
 
+// Identity lookup goes through kratosAdmin keyed by consent.subject — NOT
+// whoami(kratosPublic, cookie). The cookie identifies whoever is on the
+// browser right now; consent.subject is the user Hydra committed to during
+// the preceding login step. They can diverge (second-tab signout between
+// login and consent, expired Kratos session, hijacked challenge URL) and
+// when they do Hydra is the source of truth — the id_token we mint here
+// must reflect *that* identity's traits, not the browser's.
 const loadConsent = createServerFn({ method: "GET" })
     .validator((d: unknown) => consentSearch.parse(d))
     .handler(async ({ data }) => {

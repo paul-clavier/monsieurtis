@@ -9,8 +9,9 @@
         "dev": "vite dev --port 3000",
         "build": "vite build",
         "preview": "vite preview",
-        "test": "vitest run",
-        "typecheck": "tsc --noEmit"
+        "test": "vitest run --passWithNoTests",
+        "typecheck": "tsc --noEmit",
+        "lint": "eslint"
     },
     "dependencies": {
         "@monsieurtis/core": "workspace:*",
@@ -30,6 +31,8 @@
     },
     "devDependencies": {
         "@monsieurtis/tsconfig": "workspace:*",
+        "@tanstack/eslint-config": "catalog:tanstack",
+        "eslint": "catalog:tooling",
         "@tailwindcss/typography": "catalog:tailwind",
         "@tanstack/devtools-vite": "catalog:tanstack",
         "@testing-library/dom": "catalog:testing",

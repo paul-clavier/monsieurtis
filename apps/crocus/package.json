@@ -9,7 +9,7 @@
         "dev": "vite dev --port 3001",
         "build": "vite build",
         "preview": "vite preview",
-        "test": "vitest run",
+        "test": "vitest run --passWithNoTests",
         "typecheck": "tsc --noEmit",
         "lint": "eslint",
         "format": "prettier --write . && eslint --fix",
