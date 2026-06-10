@@ -1,6 +1,6 @@
 import { SetMetadata } from "@nestjs/common";
 
-import { AppId } from "../../types";
+import { AppId } from "@monsieurtis/ory";
 
 export const REQUIRE_APP_ACCESS_KEY = "monsieurtis:require-app-access";
 

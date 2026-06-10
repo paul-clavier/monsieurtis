@@ -7,35 +7,9 @@
         "typecheck": "tsc --noEmit"
     },
     "exports": {
-        ".": "./src/index.ts",
-        "./nest": "./src/nest/index.ts",
-        "./react": "./src/react/index.ts"
-    },
-    "dependencies": {
-        "@monsieurtis/core": "workspace:*"
-    },
-    "peerDependencies": {
-        "@nestjs/common": "catalog:nest",
-        "react": "catalog:react",
-        "@tanstack/react-router": "catalog:tanstack"
-    },
-    "peerDependenciesMeta": {
-        "@nestjs/common": {
-            "optional": true
-        },
-        "react": {
-            "optional": true
-        },
-        "@tanstack/react-router": {
-            "optional": true
-        }
+        ".": "./src/index.ts"
     },
     "devDependencies": {
-        "@monsieurtis/tsconfig": "workspace:*",
-        "@nestjs/common": "catalog:nest",
-        "@types/react": "catalog:react",
-        "@tanstack/react-router": "catalog:tanstack",
-        "react": "catalog:react",
-        "reflect-metadata": "catalog:nest"
+        "@monsieurtis/tsconfig": "workspace:*"
     }
 }

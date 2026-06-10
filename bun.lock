@@ -218,30 +218,41 @@
     "lib/packages/ory": {
       "name": "@monsieurtis/ory",
       "version": "0.0.0",
+      "devDependencies": {
+        "@monsieurtis/tsconfig": "workspace:*",
+      },
+    },
+    "lib/packages/ory-nest": {
+      "name": "@monsieurtis/ory-nest",
+      "version": "0.0.0",
       "dependencies": {
-        "@monsieurtis/core": "workspace:*",
+        "@monsieurtis/ory": "workspace:*",
       },
       "devDependencies": {
         "@monsieurtis/tsconfig": "workspace:*",
         "@nestjs/common": "catalog:nest",
         "@nestjs/core": "catalog:nest",
-        "@tanstack/react-router": "catalog:tanstack",
-        "@types/react": "catalog:react",
-        "react": "catalog:react",
         "reflect-metadata": "catalog:nest",
       },
       "peerDependencies": {
         "@nestjs/common": "catalog:nest",
         "@nestjs/core": "catalog:nest",
-        "@tanstack/react-router": "catalog:tanstack",
+      },
+    },
+    "lib/packages/ory-react": {
+      "name": "@monsieurtis/ory-react",
+      "version": "0.0.0",
+      "dependencies": {
+        "@monsieurtis/ory": "workspace:*",
+      },
+      "devDependencies": {
+        "@monsieurtis/tsconfig": "workspace:*",
+        "@types/react": "catalog:react",
         "react": "catalog:react",
       },
-      "optionalPeers": [
-        "@nestjs/common",
-        "@nestjs/core",
-        "@tanstack/react-router",
-        "react",
-      ],
+      "peerDependencies": {
+        "react": "catalog:react",
+      },
     },
     "lib/packages/prisma": {
       "name": "@monsieurtis/prisma",
@@ -685,6 +696,10 @@
     "@monsieurtis/nest-rest-crud": ["@monsieurtis/nest-rest-crud@workspace:lib/packages/nest-rest-crud"],
 
     "@monsieurtis/ory": ["@monsieurtis/ory@workspace:lib/packages/ory"],
+
+    "@monsieurtis/ory-nest": ["@monsieurtis/ory-nest@workspace:lib/packages/ory-nest"],
+
+    "@monsieurtis/ory-react": ["@monsieurtis/ory-react@workspace:lib/packages/ory-react"],
 
     "@monsieurtis/prisma": ["@monsieurtis/prisma@workspace:lib/packages/prisma"],
 
