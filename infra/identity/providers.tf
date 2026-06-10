@@ -30,3 +30,13 @@ provider "helm" {
     cluster_ca_certificate = base64decode(local.cluster["certificate-authority-data"])
   }
 }
+
+# `load_config_file = false` prevents the provider from falling back to
+# ~/.kube/config when the inline config is unknown at plan time.
+provider "kubectl" {
+  host                   = local.cluster.server
+  client_certificate     = base64decode(local.user["client-certificate-data"])
+  client_key             = base64decode(local.user["client-key-data"])
+  cluster_ca_certificate = base64decode(local.cluster["certificate-authority-data"])
+  load_config_file       = false
+}

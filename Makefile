@@ -21,6 +21,9 @@ help: ## Show this help
 	@printf "  $(DIM)cloud$(RESET)\n"
 	@printf "    $(CYAN)%-20s$(RESET) %s\n" "tofu-init-cloud" "Run tofu-init in infra/cloud"
 	@printf "    $(CYAN)%-20s$(RESET) %s\n" "tofu-lock-cloud" "Run tofu-lock in infra/cloud"
+	@printf "  $(DIM)identity$(RESET)\n"
+	@printf "    $(CYAN)%-20s$(RESET) %s\n" "tofu-init-identity" "Run tofu-init in infra/identity"
+	@printf "    $(CYAN)%-20s$(RESET) %s\n" "tofu-lock-identity" "Run tofu-lock in infra/identity"
 	@printf "\n"
 
 # ─── scripts ──────────────────────────────────────────────────────────────────
@@ -52,6 +55,9 @@ tofu-login:
 
 tofu-%-cloud:
 	@$(MAKE) -C infra/cloud tofu-$*
+
+tofu-%-identity:
+	@$(MAKE) -C infra/identity tofu-$*
 
 bootstrap-tofu-apply:
 	@cd infra/bootstrap && ./run.sh
