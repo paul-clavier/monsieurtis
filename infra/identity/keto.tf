@@ -133,7 +133,7 @@ resource "kubernetes_job" "keto_reconcile" {
     # outcome: the static desired set, the owner email, and the list of
     # gated apps that the owner gets access to. Any change to any of them
     # spawns a fresh Job rather than colliding with the immutable spec.
-    name      = "keto-reconcile-${substr(sha256(jsonencode({
+    name = "keto-reconcile-${substr(sha256(jsonencode({
       desired     = local.desired_tuples
       owner_email = local.owner_email
       owner_apps  = local.gated_apps

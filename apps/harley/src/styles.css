@@ -1,5 +1,5 @@
-@import "../../ui/styles/globals.css";
-@source "../../../ui/components/**/*.{ts,tsx}";
+@import "../../../lib/ui/styles/globals.css";
+@source "../../../lib/ui/components/**/*.{ts,tsx}";
 
 * {
     box-sizing: border-box;
