@@ -36,7 +36,7 @@ const consentSearch = z.object({
 // when they do Hydra is the source of truth — the id_token we mint here
 // must reflect *that* identity's traits, not the browser's.
 const loadConsent = createServerFn({ method: "GET" })
-    .validator((d: unknown) => consentSearch.parse(d))
+    .inputValidator((d: unknown) => consentSearch.parse(d))
     .handler(async ({ data }) => {
         const consent = await getConsentRequest(hydraAdmin, data.consent_challenge);
         const identity = await getIdentity(kratosAdmin, consent.subject);
@@ -57,7 +57,7 @@ const loadConsent = createServerFn({ method: "GET" })
     });
 
 const acceptConsent = createServerFn({ method: "POST" })
-    .validator((d: unknown) =>
+    .inputValidator((d: unknown) =>
         z
             .object({
                 consent_challenge: z.string(),

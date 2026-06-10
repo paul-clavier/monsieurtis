@@ -11,9 +11,12 @@
     },
     "dependencies": {
         "@monsieurtis/core": "workspace:*",
-        "@prisma/client": "catalog:prisma"
+        "@prisma/adapter-pg": "catalog:prisma",
+        "@prisma/client": "catalog:prisma",
+        "pg": "catalog:prisma"
     },
     "devDependencies": {
-        "@monsieurtis/tsconfig": "workspace:*"
+        "@monsieurtis/tsconfig": "workspace:*",
+        "@types/pg": "catalog:prisma"
     }
 }

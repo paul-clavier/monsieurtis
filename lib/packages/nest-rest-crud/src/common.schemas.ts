@@ -48,11 +48,14 @@ void _sortDirectionMatchesCore;
  */
 export const makeListQuerySchema = <F extends z.ZodTypeAny>(filters?: F) => {
     const filtersSchema = filters
-        ? z.preprocess(
-              (val) => (Array.isArray(val) ? val : val ? [val] : undefined),
-              z.array(filters).optional(),
-          )
-        : z.undefined();
+        ? z
+              .preprocess(
+                  (val) =>
+                      Array.isArray(val) ? val : val ? [val] : undefined,
+                  z.array(filters).optional(),
+              )
+              .optional()
+        : z.undefined().optional();
 
     return z.object({
         pagination: PaginationSchema.partial().optional(),

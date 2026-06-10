@@ -38,7 +38,7 @@ const loginSearch = z.object({
  * C. No challenge, no session → SSO-style bounce to Kratos that lands on /.
  */
 const handleLogin = createServerFn({ method: "GET" })
-    .validator((d: unknown) => loginSearch.parse(d))
+    .inputValidator((d: unknown) => loginSearch.parse(d))
     .handler(async ({ data }) => {
         const cookieHeader = getCookieHeader();
         const session = await whoami(kratosPublic, cookieHeader).catch(
