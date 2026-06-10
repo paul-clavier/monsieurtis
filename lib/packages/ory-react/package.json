@@ -1,0 +1,23 @@
+{
+    "name": "@monsieurtis/ory-react",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "typecheck": "tsc --noEmit"
+    },
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "dependencies": {
+        "@monsieurtis/ory": "workspace:*"
+    },
+    "peerDependencies": {
+        "react": "catalog:react"
+    },
+    "devDependencies": {
+        "@monsieurtis/tsconfig": "workspace:*",
+        "@types/react": "catalog:react",
+        "react": "catalog:react"
+    }
+}

@@ -7,8 +7,8 @@ import {
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
-import { canAccessApp, type KetoCheckClient } from "../../keto/check";
-import { AppId } from "../../types";
+import { AppId, canAccessApp, type KetoCheckClient } from "@monsieurtis/ory";
+
 import { REQUIRE_APP_ACCESS_KEY } from "../decorators/require-app-access.decorator";
 import { KETO_CLIENT, ORY_CONFIG } from "../ory.module";
 

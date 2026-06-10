@@ -1,6 +1,6 @@
 import { DynamicModule, Module, Provider } from "@nestjs/common";
 
-import { KetoCheckClient } from "../keto/check";
+import { KetoCheckClient } from "@monsieurtis/ory";
 import { KetoAccessGuard } from "./guards/keto-access.guard";
 
 export const KETO_CLIENT = "MONSIEURTIS_ORY_KETO_CLIENT";

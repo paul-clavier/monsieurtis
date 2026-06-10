@@ -1,0 +1,25 @@
+{
+    "name": "@monsieurtis/ory-nest",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "typecheck": "tsc --noEmit"
+    },
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "dependencies": {
+        "@monsieurtis/ory": "workspace:*"
+    },
+    "peerDependencies": {
+        "@nestjs/common": "catalog:nest",
+        "@nestjs/core": "catalog:nest"
+    },
+    "devDependencies": {
+        "@monsieurtis/tsconfig": "workspace:*",
+        "@nestjs/common": "catalog:nest",
+        "@nestjs/core": "catalog:nest",
+        "reflect-metadata": "catalog:nest"
+    }
+}
