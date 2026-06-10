@@ -7,16 +7,16 @@ façade, the use-case façade calls a `CommonRepository`.
 
 ## Routes
 
-| Method | Path        | Body / Query                               | Returns        |
-|--------|-------------|--------------------------------------------|----------------|
-| GET    | `/`         | `?filters=…&sort=field:DIR&include=a,b&pagination[page]=1&pagination[pageSize]=20` | array OR `Page<E>` |
-| GET    | `/:id`      | `?include=a,b`                             | `E & relations` or 404 |
-| POST   | `/`         | `Create` body                              | `{ id }`       |
-| POST   | `/bulk`     | `Create[]` body                            | `{ ids }`      |
-| PATCH  | `/:id`      | `Update` body                              | `{ id }`       |
-| PATCH  | `/`         | `{ ids: string[]; data: Update }`          | `{ ids }`      |
-| DELETE | `/:id`      | —                                          | `{ id }`       |
-| DELETE | `/`         | `{ ids: string[] }`                        | `{ ids }`      |
+| Method | Path    | Body / Query                                                                       | Returns                |
+| ------ | ------- | ---------------------------------------------------------------------------------- | ---------------------- |
+| GET    | `/`     | `?filters=…&sort=field:DIR&include=a,b&pagination[page]=1&pagination[pageSize]=20` | array OR `Page<E>`     |
+| GET    | `/:id`  | `?include=a,b`                                                                     | `E & relations` or 404 |
+| POST   | `/`     | `Create` body                                                                      | `{ id }`               |
+| POST   | `/bulk` | `Create[]` body                                                                    | `{ ids }`              |
+| PATCH  | `/:id`  | `Update` body                                                                      | `{ id }`               |
+| PATCH  | `/`     | `{ ids: string[]; data: Update }`                                                  | `{ ids }`              |
+| DELETE | `/:id`  | —                                                                                  | `{ id }`               |
+| DELETE | `/`     | `{ ids: string[] }`                                                                | `{ ids }`              |
 
 `Update` defaults to `Create.partial()` if not supplied. `GET /` returns a
 `Page<E>` envelope when `pagination[page]` and `pagination[pageSize]` are both
@@ -27,7 +27,10 @@ present, otherwise a plain array.
 ```ts
 // presentation/api/internal/ingredient/ingredient.schemas.ts
 import { z } from "zod";
-export const IngredientCreate  = z.object({ name: z.string().min(1), label: z.string().min(1) });
+export const IngredientCreate = z.object({
+    name: z.string().min(1),
+    label: z.string().min(1),
+});
 export const IngredientFilters = z.object({ search: z.string().min(1) });
 ```
 
@@ -40,11 +43,13 @@ export class IngredientController extends CommonControllerMixin<
     typeof IngredientCreate,
     typeof IngredientFilters
 >({
-    create:      IngredientCreate,
-    filters:     IngredientFilters,
-    sortFields:  ["name", "label"] as const,
+    create: IngredientCreate,
+    filters: IngredientFilters,
+    sortFields: ["name", "label"] as const,
 }) {
-    constructor(public readonly useCases: IngredientUseCases) { super(); }
+    constructor(public readonly useCases: IngredientUseCases) {
+        super();
+    }
 }
 ```
 
@@ -54,13 +59,13 @@ decorator.
 
 ## Factory options
 
-| Option         | Purpose |
-|----------------|---------|
-| `create`       | Zod schema for `POST /` and `POST /bulk` items. Required. Must be `z.object(...)`. |
+| Option         | Purpose                                                                                    |
+| -------------- | ------------------------------------------------------------------------------------------ |
+| `create`       | Zod schema for `POST /` and `POST /bulk` items. Required. Must be `z.object(...)`.         |
 | `update`       | Zod schema for `PATCH /:id` and `PATCH /` data. Optional — defaults to `create.partial()`. |
-| `filters`      | Zod schema for each filter object in `?filters=…`. |
-| `relationKeys` | Allow-list of relation names accepted in `?include=`. Unknown values are dropped. |
-| `sortFields`   | Allow-list of sort fields. Unknown values cause the `sort` clause to be dropped. |
+| `filters`      | Zod schema for each filter object in `?filters=…`.                                         |
+| `relationKeys` | Allow-list of relation names accepted in `?include=`. Unknown values are dropped.          |
+| `sortFields`   | Allow-list of sort fields. Unknown values cause the `sort` clause to be dropped.           |
 
 The factory wires `ZodValidationPipe` per route automatically — you do not
 need to register it globally and you do not need `createZodDto` wrappers.
@@ -77,12 +82,16 @@ fall under one of two patterns.
 Two clean places to put it. Pick by where the side effect lives in the
 layering.
 
-**(a) Inside the use-case** (preferred when the side effect is *domain
-logic* — the create is incomplete without it):
+**(a) Inside the use-case** (preferred when the side effect is _domain
+logic_ — the create is incomplete without it):
 
 ```ts
 @Injectable()
-export class FooUseCases extends CommonUseCases<Foo, Record<string, never>, FooFilters> {
+export class FooUseCases extends CommonUseCases<
+    Foo,
+    Record<string, never>,
+    FooFilters
+> {
     constructor(
         @Inject(FOO_REPOSITORY)
         repository: CommonRepository<Foo, Record<string, never>, FooFilters>,
@@ -153,7 +162,7 @@ The other 8 routes stay untouched — only `DELETE /foos/:id` is now gated by
 the permission check.
 
 If **every** route on the controller needs the same guard, apply it at class
-level instead — that one *does* propagate:
+level instead — that one _does_ propagate:
 
 ```ts
 @Controller("foos")
@@ -161,7 +170,7 @@ level instead — that one *does* propagate:
 export class FooController extends CommonControllerMixin({...}) { … }
 ```
 
-> ⚠️ **Trap to avoid**: do not put `@Permission(...)` on the *base class*
+> ⚠️ **Trap to avoid**: do not put `@Permission(...)` on the _base class_
 > methods inside the factory and expect subclass overrides to inherit it.
 > They won't. The override has its own descriptor with no decorators.
 

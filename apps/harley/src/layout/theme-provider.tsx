@@ -11,7 +11,8 @@ const systemPrefersDark = () =>
     window.matchMedia("(prefers-color-scheme: dark)").matches;
 
 const applyTheme = (theme: Theme) => {
-    const isDark = theme === "dark" || (theme === "system" && systemPrefersDark());
+    const isDark =
+        theme === "dark" || (theme === "system" && systemPrefersDark());
     document.documentElement.classList.toggle("dark", isDark);
 };
 

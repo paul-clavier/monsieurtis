@@ -8,191 +8,191 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as RegistrationRouteImport } from './routes/registration'
-import { Route as RecoveryRouteImport } from './routes/recovery'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as HealthzRouteImport } from './routes/healthz'
-import { Route as DeniedRouteImport } from './routes/denied'
-import { Route as ConsentRouteImport } from './routes/consent'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as ConsentRouteImport } from "./routes/consent";
+import { Route as DeniedRouteImport } from "./routes/denied";
+import { Route as HealthzRouteImport } from "./routes/healthz";
+import { Route as IndexRouteImport } from "./routes/index";
+import { Route as LoginRouteImport } from "./routes/login";
+import { Route as RecoveryRouteImport } from "./routes/recovery";
+import { Route as RegistrationRouteImport } from "./routes/registration";
 
 const RegistrationRoute = RegistrationRouteImport.update({
-  id: '/registration',
-  path: '/registration',
-  getParentRoute: () => rootRouteImport,
-} as any)
+    id: "/registration",
+    path: "/registration",
+    getParentRoute: () => rootRouteImport,
+} as any);
 const RecoveryRoute = RecoveryRouteImport.update({
-  id: '/recovery',
-  path: '/recovery',
-  getParentRoute: () => rootRouteImport,
-} as any)
+    id: "/recovery",
+    path: "/recovery",
+    getParentRoute: () => rootRouteImport,
+} as any);
 const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
+    id: "/login",
+    path: "/login",
+    getParentRoute: () => rootRouteImport,
+} as any);
 const HealthzRoute = HealthzRouteImport.update({
-  id: '/healthz',
-  path: '/healthz',
-  getParentRoute: () => rootRouteImport,
-} as any)
+    id: "/healthz",
+    path: "/healthz",
+    getParentRoute: () => rootRouteImport,
+} as any);
 const DeniedRoute = DeniedRouteImport.update({
-  id: '/denied',
-  path: '/denied',
-  getParentRoute: () => rootRouteImport,
-} as any)
+    id: "/denied",
+    path: "/denied",
+    getParentRoute: () => rootRouteImport,
+} as any);
 const ConsentRoute = ConsentRouteImport.update({
-  id: '/consent',
-  path: '/consent',
-  getParentRoute: () => rootRouteImport,
-} as any)
+    id: "/consent",
+    path: "/consent",
+    getParentRoute: () => rootRouteImport,
+} as any);
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+    id: "/",
+    path: "/",
+    getParentRoute: () => rootRouteImport,
+} as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/consent': typeof ConsentRoute
-  '/denied': typeof DeniedRoute
-  '/healthz': typeof HealthzRoute
-  '/login': typeof LoginRoute
-  '/recovery': typeof RecoveryRoute
-  '/registration': typeof RegistrationRoute
+    "/": typeof IndexRoute;
+    "/consent": typeof ConsentRoute;
+    "/denied": typeof DeniedRoute;
+    "/healthz": typeof HealthzRoute;
+    "/login": typeof LoginRoute;
+    "/recovery": typeof RecoveryRoute;
+    "/registration": typeof RegistrationRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/consent': typeof ConsentRoute
-  '/denied': typeof DeniedRoute
-  '/healthz': typeof HealthzRoute
-  '/login': typeof LoginRoute
-  '/recovery': typeof RecoveryRoute
-  '/registration': typeof RegistrationRoute
+    "/": typeof IndexRoute;
+    "/consent": typeof ConsentRoute;
+    "/denied": typeof DeniedRoute;
+    "/healthz": typeof HealthzRoute;
+    "/login": typeof LoginRoute;
+    "/recovery": typeof RecoveryRoute;
+    "/registration": typeof RegistrationRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/consent': typeof ConsentRoute
-  '/denied': typeof DeniedRoute
-  '/healthz': typeof HealthzRoute
-  '/login': typeof LoginRoute
-  '/recovery': typeof RecoveryRoute
-  '/registration': typeof RegistrationRoute
+    __root__: typeof rootRouteImport;
+    "/": typeof IndexRoute;
+    "/consent": typeof ConsentRoute;
+    "/denied": typeof DeniedRoute;
+    "/healthz": typeof HealthzRoute;
+    "/login": typeof LoginRoute;
+    "/recovery": typeof RecoveryRoute;
+    "/registration": typeof RegistrationRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/consent'
-    | '/denied'
-    | '/healthz'
-    | '/login'
-    | '/recovery'
-    | '/registration'
-  fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/consent'
-    | '/denied'
-    | '/healthz'
-    | '/login'
-    | '/recovery'
-    | '/registration'
-  id:
-    | '__root__'
-    | '/'
-    | '/consent'
-    | '/denied'
-    | '/healthz'
-    | '/login'
-    | '/recovery'
-    | '/registration'
-  fileRoutesById: FileRoutesById
+    fileRoutesByFullPath: FileRoutesByFullPath;
+    fullPaths:
+        | "/"
+        | "/consent"
+        | "/denied"
+        | "/healthz"
+        | "/login"
+        | "/recovery"
+        | "/registration";
+    fileRoutesByTo: FileRoutesByTo;
+    to:
+        | "/"
+        | "/consent"
+        | "/denied"
+        | "/healthz"
+        | "/login"
+        | "/recovery"
+        | "/registration";
+    id:
+        | "__root__"
+        | "/"
+        | "/consent"
+        | "/denied"
+        | "/healthz"
+        | "/login"
+        | "/recovery"
+        | "/registration";
+    fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  ConsentRoute: typeof ConsentRoute
-  DeniedRoute: typeof DeniedRoute
-  HealthzRoute: typeof HealthzRoute
-  LoginRoute: typeof LoginRoute
-  RecoveryRoute: typeof RecoveryRoute
-  RegistrationRoute: typeof RegistrationRoute
+    IndexRoute: typeof IndexRoute;
+    ConsentRoute: typeof ConsentRoute;
+    DeniedRoute: typeof DeniedRoute;
+    HealthzRoute: typeof HealthzRoute;
+    LoginRoute: typeof LoginRoute;
+    RecoveryRoute: typeof RecoveryRoute;
+    RegistrationRoute: typeof RegistrationRoute;
 }
 
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {
-    '/registration': {
-      id: '/registration'
-      path: '/registration'
-      fullPath: '/registration'
-      preLoaderRoute: typeof RegistrationRouteImport
-      parentRoute: typeof rootRouteImport
+declare module "@tanstack/react-router" {
+    interface FileRoutesByPath {
+        "/registration": {
+            id: "/registration";
+            path: "/registration";
+            fullPath: "/registration";
+            preLoaderRoute: typeof RegistrationRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
+        "/recovery": {
+            id: "/recovery";
+            path: "/recovery";
+            fullPath: "/recovery";
+            preLoaderRoute: typeof RecoveryRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
+        "/login": {
+            id: "/login";
+            path: "/login";
+            fullPath: "/login";
+            preLoaderRoute: typeof LoginRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
+        "/healthz": {
+            id: "/healthz";
+            path: "/healthz";
+            fullPath: "/healthz";
+            preLoaderRoute: typeof HealthzRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
+        "/denied": {
+            id: "/denied";
+            path: "/denied";
+            fullPath: "/denied";
+            preLoaderRoute: typeof DeniedRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
+        "/consent": {
+            id: "/consent";
+            path: "/consent";
+            fullPath: "/consent";
+            preLoaderRoute: typeof ConsentRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
+        "/": {
+            id: "/";
+            path: "/";
+            fullPath: "/";
+            preLoaderRoute: typeof IndexRouteImport;
+            parentRoute: typeof rootRouteImport;
+        };
     }
-    '/recovery': {
-      id: '/recovery'
-      path: '/recovery'
-      fullPath: '/recovery'
-      preLoaderRoute: typeof RecoveryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/healthz': {
-      id: '/healthz'
-      path: '/healthz'
-      fullPath: '/healthz'
-      preLoaderRoute: typeof HealthzRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/denied': {
-      id: '/denied'
-      path: '/denied'
-      fullPath: '/denied'
-      preLoaderRoute: typeof DeniedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/consent': {
-      id: '/consent'
-      path: '/consent'
-      fullPath: '/consent'
-      preLoaderRoute: typeof ConsentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-  }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  ConsentRoute: ConsentRoute,
-  DeniedRoute: DeniedRoute,
-  HealthzRoute: HealthzRoute,
-  LoginRoute: LoginRoute,
-  RecoveryRoute: RecoveryRoute,
-  RegistrationRoute: RegistrationRoute,
-}
+    IndexRoute: IndexRoute,
+    ConsentRoute: ConsentRoute,
+    DeniedRoute: DeniedRoute,
+    HealthzRoute: HealthzRoute,
+    LoginRoute: LoginRoute,
+    RecoveryRoute: RecoveryRoute,
+    RegistrationRoute: RegistrationRoute,
+};
 export const routeTree = rootRouteImport
-  ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+    ._addFileChildren(rootRouteChildren)
+    ._addFileTypes<FileRouteTypes>();
 
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
+import type { createStart } from "@tanstack/react-start";
+import type { getRouter } from "./router.tsx";
+declare module "@tanstack/react-start" {
+    interface Register {
+        ssr: true;
+        router: Awaited<ReturnType<typeof getRouter>>;
+    }
 }

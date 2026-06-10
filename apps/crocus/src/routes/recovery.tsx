@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@monsieurtis/ui/components/card";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@monsieurtis/ui/components/card";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
@@ -14,7 +20,9 @@ const startRecovery = createServerFn({ method: "GET" })
     .handler(async ({ data }) => {
         if (data.flow) return { flow: data.flow };
 
-        const returnTo = encodeURIComponent(`${process.env.PUBLIC_AUTH_ORIGIN}/`);
+        const returnTo = encodeURIComponent(
+            `${process.env.PUBLIC_AUTH_ORIGIN}/`,
+        );
         throw redirect({
             href: `${process.env.KRATOS_PUBLIC_URL}/self-service/recovery/browser?return_to=${returnTo}`,
         });

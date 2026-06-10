@@ -10,8 +10,6 @@ permissions:
     contents: read
 
 jobs:
-    # Publish the Crocus image before the identity apply so the tag Terraform
-    # references already exists in ghcr. Identity-only: skipped on cloud.
     build-crocus:
         if: github.ref_name == 'infra_identity_main'
         uses: ./.github/workflows/crocus-publish.yml
@@ -19,13 +17,14 @@ jobs:
             image: ghcr.io/monsieurtis/crocus:${{ github.sha }}
         secrets: inherit
 
-    apply:
+    deploy-tofu:
         needs: [build-crocus]
         # Run after the publish on identity; still run on cloud (where the
         # publish is skipped). Never apply if the publish actually failed.
         if: ${{ !cancelled() && needs.build-crocus.result != 'failure' }}
         runs-on: ubuntu-latest
         environment: production
+        name: deploy-tofu (${{ github.ref_name }})
         # One apply per branch/project at a time; never cancel a running apply.
         concurrency:
             group: tofu-apply-${{ github.ref_name }}

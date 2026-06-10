@@ -17,7 +17,7 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    detect-changes:
+    detect-changes-tofu-ci:
         runs-on: ubuntu-latest
         outputs:
             projects: ${{ steps.compute.outputs.projects }}
@@ -42,7 +42,7 @@ jobs:
                   fi
                   echo "projects=$projects" >> "$GITHUB_OUTPUT"
 
-    checks:
+    quality-tofu-checks:
         needs: detect-changes
         # Skip on fork PRs: plan needs secrets, which must never reach a fork.
         if: >-
@@ -50,6 +50,7 @@ jobs:
             github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ubuntu-latest
         environment: production
+        name: quality-ts-checks (${{ matrix.project }})
         permissions:
             contents: read
             pull-requests: write

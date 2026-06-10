@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@monsieurtis/ui/components/card";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@monsieurtis/ui/components/card";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
@@ -20,7 +26,9 @@ const startRegistration = createServerFn({ method: "GET" })
     .handler(async ({ data }) => {
         if (data.flow) return { flow: data.flow }; // render the placeholder
 
-        const returnTo = encodeURIComponent(`${process.env.PUBLIC_AUTH_ORIGIN}/`);
+        const returnTo = encodeURIComponent(
+            `${process.env.PUBLIC_AUTH_ORIGIN}/`,
+        );
         throw redirect({
             href: `${process.env.KRATOS_PUBLIC_URL}/self-service/registration/browser?return_to=${returnTo}`,
         });
@@ -44,9 +52,13 @@ function RegistrationPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
-                The Kratos flow renderer is not yet implemented in Crocus. For now, complete
-                registration by submitting forms directly to Kratos at <code>/self-service</code>.
-                See <a className="underline" href="/login">/login</a> when you&apos;re done.
+                The Kratos flow renderer is not yet implemented in Crocus. For
+                now, complete registration by submitting forms directly to
+                Kratos at <code>/self-service</code>. See{" "}
+                <a className="underline" href="/login">
+                    /login
+                </a>{" "}
+                when you&apos;re done.
             </CardContent>
         </Card>
     );

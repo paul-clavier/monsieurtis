@@ -13,9 +13,9 @@ A concrete repository extends it, provides a couple of fields, and gets the full
 
 ## What a subclass may declare
 
-| Member                         | Purpose                                                             |
-| ------------------------------ | ------------------------------------------------------------------- |
-| `protected readonly relations` | Catalog of relations callers can request via `include: ["…"]`       |
+| Member                         | Purpose                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------ |
+| `protected readonly relations` | Catalog of relations callers can request via `include: ["…"]`            |
 | `protected readonly filters`   | Catalog of filter callbacks; values plugged in via `filters: [{ … }, …]` |
 
 ## Minimal example — no relations, no filters
@@ -65,7 +65,7 @@ tagRepo.deleteMany(ids);                           // string[]
 
 Filters are functions `(value) => Partial<TWhere>` keyed by name.
 
-`filters` on the query is a **list of filter objects**. Within one object, the supplied keys are combined with `AND`. The list itself is combined with `OR` — i.e. `filters: [A, B]` matches rows that match `A` *or* `B`.
+`filters` on the query is a **list of filter objects**. Within one object, the supplied keys are combined with `AND`. The list itself is combined with `OR` — i.e. `filters: [A, B]` matches rows that match `A` _or_ `B`.
 
 ```ts
 type ArticleFilters = {
@@ -107,7 +107,7 @@ articleRepo.getPage({
     pagination: { page: 1, pageSize: 20 },
     filters: [
         { authorId: meId, search: "prisma" }, // (authorId = me AND title ~ "prisma")
-        { authorId: coAuthorId },             //   OR  authorId = coAuthor
+        { authorId: coAuthorId }, //   OR  authorId = coAuthor
     ],
 });
 ```

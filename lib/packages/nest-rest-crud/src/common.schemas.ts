@@ -50,8 +50,7 @@ export const makeListQuerySchema = <F extends z.ZodTypeAny>(filters?: F) => {
     const filtersSchema = filters
         ? z
               .preprocess(
-                  (val) =>
-                      Array.isArray(val) ? val : val ? [val] : undefined,
+                  (val) => (Array.isArray(val) ? val : val ? [val] : undefined),
                   z.array(filters).optional(),
               )
               .optional()
