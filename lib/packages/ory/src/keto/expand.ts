@@ -35,10 +35,13 @@ export const ketoQuery = async (
     if (input.subject_id) params.set("subject_id", input.subject_id);
 
     const f = client.fetch ?? fetch;
-    const res = await f(`${client.readUrl}/relation-tuples?${params.toString()}`, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-    });
+    const res = await f(
+        `${client.readUrl}/relation-tuples?${params.toString()}`,
+        {
+            method: "GET",
+            headers: { Accept: "application/json" },
+        },
+    );
 
     if (!res.ok) {
         throw new Error(`Keto query failed with HTTP ${res.status}`);

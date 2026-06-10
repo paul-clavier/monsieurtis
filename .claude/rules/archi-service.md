@@ -66,14 +66,14 @@ src/
 
 ## Import Rules
 
-| From → To | Allowed? |
-|-----------|----------|
-| Domain → Infrastructure | No |
-| Domain → Presentation | No |
-| Infrastructure → Domain interfaces/entities | Yes |
-| Presentation → Domain use cases/entities | Yes |
-| Presentation → Infrastructure | No (use DI) |
-| Any layer → `utils/` | Yes |
+| From → To                                   | Allowed?    |
+| ------------------------------------------- | ----------- |
+| Domain → Infrastructure                     | No          |
+| Domain → Presentation                       | No          |
+| Infrastructure → Domain interfaces/entities | Yes         |
+| Presentation → Domain use cases/entities    | Yes         |
+| Presentation → Infrastructure               | No (use DI) |
+| Any layer → `utils/`                        | Yes         |
 
 ---
 
@@ -131,7 +131,10 @@ Use cases receive interfaces via `@Inject(TOKEN)`.
 
 ```typescript
 @Injectable()
-export class FetchItemUseCase implements UseCase<FetchItemPort, FetchItemResult> {
+export class FetchItemUseCase implements UseCase<
+    FetchItemPort,
+    FetchItemResult
+> {
     constructor(
         @Inject(ITEM_REPOSITORY)
         private readonly itemRepository: ItemRepository,
@@ -235,9 +238,10 @@ type FetchItemsPort = ItemFilters;
 type FetchItemsResult = ItemDetail[];
 
 @Injectable()
-export class FetchItemsUseCase
-    implements UseCase<FetchItemsPort, FetchItemsResult>
-{
+export class FetchItemsUseCase implements UseCase<
+    FetchItemsPort,
+    FetchItemsResult
+> {
     constructor(
         @Inject(ITEM_REPOSITORY)
         private readonly itemRepository: ItemRepository,
@@ -313,7 +317,9 @@ export class PrismaItemRepository implements ItemRepository {
         const rows = await this.prisma.item.findMany({
             where: {
                 ...(filters.ownerId && { ownerId: filters.ownerId }),
-                ...(filters.available !== undefined && { available: filters.available }),
+                ...(filters.available !== undefined && {
+                    available: filters.available,
+                }),
                 ...(filters.search && {
                     name: { contains: filters.search, mode: "insensitive" },
                 }),
@@ -401,7 +407,14 @@ Routes to use cases. Never instantiates anything. Maps responses via mappers.
 
 ```typescript
 // presentation/api/internal/items/item.controller.ts
-import { Controller, Get, HttpStatus, Param, Query, UseGuards } from "@nestjs/common";
+import {
+    Controller,
+    Get,
+    HttpStatus,
+    Param,
+    Query,
+    UseGuards,
+} from "@nestjs/common";
 import { FetchItemsUseCase } from "@/domain/use-cases/query/fetch-items.use-case";
 import { FetchItemUseCase } from "@/domain/use-cases/query/fetch-item.use-case";
 import { AccessTokenGuard } from "@/presentation/auth/auth.guard";
@@ -489,9 +502,10 @@ export interface CreateItemPort {
 export type CreateItemResult = Item;
 
 @Injectable()
-export class CreateItemUseCase
-    implements UseCase<CreateItemPort, CreateItemResult>
-{
+export class CreateItemUseCase implements UseCase<
+    CreateItemPort,
+    CreateItemResult
+> {
     constructor(
         @Inject(ITEM_REPOSITORY)
         private readonly itemRepository: ItemRepository,
@@ -548,7 +562,9 @@ Custom error classes per entity. Extend `DomainError` or `ObjectNotFoundError` b
 import { DomainError, ObjectNotFoundError } from "@/utils/errors";
 import { Item } from "./item.entity";
 
-export class ItemNotFoundError extends ObjectNotFoundError<Pick<Item, "id" | "name">> {
+export class ItemNotFoundError extends ObjectNotFoundError<
+    Pick<Item, "id" | "name">
+> {
     constructor(identifiers: Partial<Pick<Item, "id" | "name">>) {
         super("Item", identifiers);
     }
@@ -688,7 +704,11 @@ The same codebase can serve different API surfaces by deployment mode. Each mode
 ```typescript
 // domain/item/item.module.ts
 const USE_CASES_INTERNAL = [FetchItemsUseCase, FetchItemUseCase];
-const USE_CASES_EXTERNAL = [FetchItemUseCase, CreateItemUseCase, UpdateItemUseCase];
+const USE_CASES_EXTERNAL = [
+    FetchItemUseCase,
+    CreateItemUseCase,
+    UpdateItemUseCase,
+];
 
 @Module({
     providers: [...USE_CASES_INTERNAL],
@@ -754,16 +774,16 @@ export type DeepPartial<T> = {
 
 ## Conventions Summary
 
-| Concern | Convention |
-|---------|-----------|
-| **File naming** | `kebab-case`: `item.entity.ts`, `fetch-items.use-case.ts`, `item.repository.ts` |
-| **Class naming** | `PascalCase`: `FetchItemsUseCase`, `PrismaItemRepository`, `ItemController` |
-| **Token naming** | `UPPER_SNAKE_CASE`: `ITEM_REPOSITORY`, `NOTIFICATION_CLIENT` |
-| **Injection** | Repositories/clients via `@Inject(TOKEN)`. Use cases via direct class injection. |
-| **Use case I/O** | Port (input interface) + Result (output type alias), both co-located in the use case file |
-| **Use case organization** | `query/` for reads, `mutate/` for writes |
-| **Entity immutability** | Domain entities are readonly interfaces. `Mutable<T>` strips `BaseEntity` fields for writes. |
-| **Mapping** | Prisma → domain in repository. Domain → response DTO in presentation mapper. |
-| **DTOs** | Live in `presentation/api/common/{entity}/`. Decorated with class-validator + Swagger. |
-| **Errors** | Domain errors in `domain/{entity}/`. Mapped to HTTP status in controllers. |
-| **Modules** | Domain modules provide use cases. Presentation modules declare controllers. Infrastructure modules provide concrete implementations. |
+| Concern                   | Convention                                                                                                                           |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **File naming**           | `kebab-case`: `item.entity.ts`, `fetch-items.use-case.ts`, `item.repository.ts`                                                      |
+| **Class naming**          | `PascalCase`: `FetchItemsUseCase`, `PrismaItemRepository`, `ItemController`                                                          |
+| **Token naming**          | `UPPER_SNAKE_CASE`: `ITEM_REPOSITORY`, `NOTIFICATION_CLIENT`                                                                         |
+| **Injection**             | Repositories/clients via `@Inject(TOKEN)`. Use cases via direct class injection.                                                     |
+| **Use case I/O**          | Port (input interface) + Result (output type alias), both co-located in the use case file                                            |
+| **Use case organization** | `query/` for reads, `mutate/` for writes                                                                                             |
+| **Entity immutability**   | Domain entities are readonly interfaces. `Mutable<T>` strips `BaseEntity` fields for writes.                                         |
+| **Mapping**               | Prisma → domain in repository. Domain → response DTO in presentation mapper.                                                         |
+| **DTOs**                  | Live in `presentation/api/common/{entity}/`. Decorated with class-validator + Swagger.                                               |
+| **Errors**                | Domain errors in `domain/{entity}/`. Mapped to HTTP status in controllers.                                                           |
+| **Modules**               | Domain modules provide use cases. Presentation modules declare controllers. Infrastructure modules provide concrete implementations. |

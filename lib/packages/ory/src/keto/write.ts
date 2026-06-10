@@ -1,5 +1,4 @@
-import { AppId, ketoUserSubject } from "../types";
-import { RelationTuple } from "../types";
+import { AppId, ketoUserSubject, RelationTuple } from "../types";
 
 /**
  * Keto write helpers — used by the Crocus admin grant flow and by the seed Job.
@@ -19,7 +18,10 @@ export const ketoPutTuple = async (
     const f = client.fetch ?? fetch;
     const res = await f(`${client.writeUrl}/admin/relation-tuples`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        },
         body: JSON.stringify(tuple),
     });
 
@@ -37,13 +39,16 @@ export const ketoDeleteTuple = async (
         namespace: tuple.namespace,
         object: tuple.object,
         relation: tuple.relation,
-        "subject_id": tuple.subject_id,
+        subject_id: tuple.subject_id,
     });
 
     const f = client.fetch ?? fetch;
-    const res = await f(`${client.writeUrl}/admin/relation-tuples?${params.toString()}`, {
-        method: "DELETE",
-    });
+    const res = await f(
+        `${client.writeUrl}/admin/relation-tuples?${params.toString()}`,
+        {
+            method: "DELETE",
+        },
+    );
 
     // 404 is fine — tuple didn't exist, we're at the desired state.
     if (!res.ok && res.status !== 404) {

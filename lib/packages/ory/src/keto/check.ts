@@ -31,14 +31,17 @@ export const ketoCheck = async (
         namespace: input.namespace,
         object: input.object,
         relation: input.relation,
-        "subject_id": input.subject_id,
+        subject_id: input.subject_id,
     });
 
     const f = client.fetch ?? fetch;
-    const res = await f(`${client.readUrl}/relation-tuples/check?${params.toString()}`, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-    });
+    const res = await f(
+        `${client.readUrl}/relation-tuples/check?${params.toString()}`,
+        {
+            method: "GET",
+            headers: { Accept: "application/json" },
+        },
+    );
 
     if (res.status === 200) {
         const body = (await res.json()) as { allowed: boolean };

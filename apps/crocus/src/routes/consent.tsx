@@ -1,11 +1,17 @@
-import { Button } from "@monsieurtis/ui/components/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@monsieurtis/ui/components/card";
 import {
     acceptConsentRequest,
     canAccessApp,
     getConsentRequest,
     getIdentity,
 } from "@monsieurtis/ory";
+import { Button } from "@monsieurtis/ui/components/button";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@monsieurtis/ui/components/card";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
@@ -38,10 +44,17 @@ const consentSearch = z.object({
 const loadConsent = createServerFn({ method: "GET" })
     .inputValidator((d: unknown) => consentSearch.parse(d))
     .handler(async ({ data }) => {
-        const consent = await getConsentRequest(hydraAdmin, data.consent_challenge);
+        const consent = await getConsentRequest(
+            hydraAdmin,
+            data.consent_challenge,
+        );
         const identity = await getIdentity(kratosAdmin, consent.subject);
 
-        const allowed = await canAccessApp(ketoRead, identity.id, consent.client.client_id);
+        const allowed = await canAccessApp(
+            ketoRead,
+            identity.id,
+            consent.client.client_id,
+        );
 
         return {
             allowed,
@@ -66,11 +79,18 @@ const acceptConsent = createServerFn({ method: "POST" })
             .parse(d),
     )
     .handler(async ({ data }) => {
-        const consent = await getConsentRequest(hydraAdmin, data.consent_challenge);
+        const consent = await getConsentRequest(
+            hydraAdmin,
+            data.consent_challenge,
+        );
         const identity = await getIdentity(kratosAdmin, consent.subject);
 
         // Defense in depth: re-check Keto right before issuing the token.
-        const allowed = await canAccessApp(ketoRead, identity.id, consent.client.client_id);
+        const allowed = await canAccessApp(
+            ketoRead,
+            identity.id,
+            consent.client.client_id,
+        );
         if (!allowed) {
             throw redirect({
                 to: "/denied",
@@ -78,18 +98,22 @@ const acceptConsent = createServerFn({ method: "POST" })
             });
         }
 
-        const result = await acceptConsentRequest(hydraAdmin, data.consent_challenge, {
-            grant_scope: data.granted_scope,
-            grant_access_token_audience: [],
-            session: {
-                id_token: {
-                    email: identity.traits.email,
-                    name: identity.traits.name,
+        const result = await acceptConsentRequest(
+            hydraAdmin,
+            data.consent_challenge,
+            {
+                grant_scope: data.granted_scope,
+                grant_access_token_audience: [],
+                session: {
+                    id_token: {
+                        email: identity.traits.email,
+                        name: identity.traits.name,
+                    },
                 },
+                remember: true,
+                remember_for: 86_400,
             },
-            remember: true,
-            remember_for: 86_400,
-        });
+        );
 
         // Hydra hands us the URL to send the browser to (back to the OAuth client).
         throw redirect({ href: result.redirect_to });
@@ -137,7 +161,9 @@ function ConsentPage() {
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="rounded-md border border-border/60 bg-muted/30 p-3">
-                    <p className="text-sm font-medium mb-1">Requested permissions</p>
+                    <p className="text-sm font-medium mb-1">
+                        Requested permissions
+                    </p>
                     <ul className="text-sm text-muted-foreground space-y-1">
                         {data.requested_scope.map((s) => (
                             <li key={s} className="font-mono">
@@ -151,7 +177,10 @@ function ConsentPage() {
                     <Button
                         variant="ghost"
                         onClick={() => {
-                            navigate({ to: "/denied", search: { app: data.appId } });
+                            navigate({
+                                to: "/denied",
+                                search: { app: data.appId },
+                            });
                         }}
                     >
                         Cancel

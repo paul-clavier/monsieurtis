@@ -25,10 +25,10 @@ behaviour are inherited from the underlying `CommonRepository` — see
 
 ## What a subclass must declare
 
-| Member               | Purpose |
-|----------------------|---------|
-| `@Injectable()`      | So Nest can construct it. The base class is framework-free; the decorator goes on the subclass to keep `@monsieurtis/core` Nest-agnostic. |
-| Constructor `super(repo)` | Pass in the concrete repository, typed as `CommonRepository<E, R, F>`. Inject through your token (`@Inject(FOO_REPOSITORY)`). |
+| Member                    | Purpose                                                                                                                                   |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `@Injectable()`           | So Nest can construct it. The base class is framework-free; the decorator goes on the subclass to keep `@monsieurtis/core` Nest-agnostic. |
+| Constructor `super(repo)` | Pass in the concrete repository, typed as `CommonRepository<E, R, F>`. Inject through your token (`@Inject(FOO_REPOSITORY)`).             |
 
 Minimal example:
 
@@ -41,7 +41,11 @@ export class IngredientUseCases extends CommonUseCases<
 > {
     constructor(
         @Inject(INGREDIENT_REPOSITORY)
-        repository: CommonRepository<Ingredient, Record<string, never>, IngredientFilters>,
+        repository: CommonRepository<
+            Ingredient,
+            Record<string, never>,
+            IngredientFilters
+        >,
     ) {
         super(repository);
     }
@@ -73,7 +77,11 @@ to get the id back, then run the side effect.
 
 ```ts
 @Injectable()
-export class FooUseCases extends CommonUseCases<Foo, Record<string, never>, FooFilters> {
+export class FooUseCases extends CommonUseCases<
+    Foo,
+    Record<string, never>,
+    FooFilters
+> {
     constructor(
         @Inject(FOO_REPOSITORY)
         repository: CommonRepository<Foo, Record<string, never>, FooFilters>,
