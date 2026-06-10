@@ -50,7 +50,7 @@ jobs:
             github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ubuntu-latest
         environment: production
-        name: quality-ts-checks (${{ matrix.project }})
+        name: quality-tofu-checks (${{ matrix.project }})
         permissions:
             contents: read
             pull-requests: write

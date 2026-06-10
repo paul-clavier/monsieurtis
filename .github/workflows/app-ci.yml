@@ -20,8 +20,8 @@ jobs:
             - uses: oven-sh/setup-bun@v2
               with:
                   bun-version: 1.3.13
-            - name: prettier --check
-              run: bunx prettier --ignore-unknown --check .
+            - run: bun install --frozen-lockfile
+            - run: bunx prettier --ignore-unknown --check .
 
     # Compute which packages need checking: those that changed, plus everything
     # that transitively depends on them. See scripts/affected.ts.
