@@ -9,6 +9,7 @@ import { identity } from "@monsieurtis/core";
 import { PrismaCommonRepository } from "@monsieurtis/prisma";
 import { Injectable } from "@nestjs/common";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type SetupRow = Prisma.SetupGetPayload<{}>;
 export type SetupWithIngredientsAndSubSetupsRow = Prisma.SetupGetPayload<{
     include: {

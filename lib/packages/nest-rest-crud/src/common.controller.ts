@@ -12,19 +12,19 @@ import {
 import { ZodValidationPipe } from "nestjs-zod";
 import { z } from "zod";
 import { makeListQuerySchema } from "./common.schemas";
+import type { ListQueryInput } from "./query.parser";
 import {
     isPageRequest,
     parseInclude,
     toPageQuery,
     toQuery,
 } from "./query.parser";
-import type { ListQueryInput } from "./query.parser";
 
 export interface CommonControllerOptions<
     E extends Entity,
     R extends object,
     CreateSchema extends z.ZodObject<z.ZodRawShape>,
-    UpdateSchema extends z.ZodTypeAny,
+    UpdateSchema extends z.ZodObject<z.ZodRawShape>,
     FiltersSchema extends z.ZodTypeAny,
 > {
     /** Schema validating the body of `POST /` and the items of `POST /bulk`. */
@@ -67,7 +67,8 @@ export const CommonControllerMixin = <
     R extends object,
     CreateSchema extends z.ZodObject<z.ZodRawShape>,
     FiltersSchema extends z.ZodTypeAny,
-    UpdateSchema extends z.ZodTypeAny = z.ZodTypeAny,
+    UpdateSchema extends z.ZodObject<z.ZodRawShape> =
+        z.ZodObject<z.ZodRawShape>,
 >(
     opts: CommonControllerOptions<
         E,
@@ -112,16 +113,16 @@ export const CommonControllerMixin = <
         async list(@Query(listPipe) q: ListQueryInput<FilterInput>) {
             if (isPageRequest(q)) {
                 return this.useCases.getPage(
-                    toPageQuery<E, FilterInput, keyof R & string>(
-                        q,
+                    toPageQuery<E, Partial<R>, keyof R & string>(
+                        q as typeof q & ListQueryInput<Partial<R>>,
                         opts.relationKeys,
                         opts.sortFields,
                     ),
                 );
             }
             return this.useCases.getAll(
-                toQuery<E, FilterInput, keyof R & string>(
-                    q,
+                toQuery<E, Partial<R>, keyof R & string>(
+                    q as ListQueryInput<Partial<R>>,
                     opts.relationKeys,
                     opts.sortFields,
                 ),
@@ -170,7 +171,10 @@ export const CommonControllerMixin = <
         @Patch("/")
         async updateMany(
             @Body(updateManyPipe)
-            body: { ids: string[]; data: UpdateInput },
+            body: {
+                ids: string[];
+                data: UpdateInput;
+            },
         ) {
             const ids = await this.useCases.updateMany(body.ids, body.data);
             return { ids };

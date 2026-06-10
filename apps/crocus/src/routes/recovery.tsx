@@ -10,7 +10,7 @@ import { z } from "zod";
 const search = z.object({ flow: z.string().optional() });
 
 const startRecovery = createServerFn({ method: "GET" })
-    .validator((d: unknown) => search.parse(d))
+    .inputValidator((d: unknown) => search.parse(d))
     .handler(async ({ data }) => {
         if (data.flow) return { flow: data.flow };
 

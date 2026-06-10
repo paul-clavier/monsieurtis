@@ -1,3 +1,5 @@
+import { PrismaPg } from "@prisma/adapter-pg";
+
 export const BATCH_OPERATION_LIMIT = 30000;
 export const DB_CONNECTION_LIMIT = 20;
 
@@ -23,9 +25,5 @@ export const prismaClientOptions = (databaseUrl: string) => ({
             level: "warn" as const,
         },
     ],
-    datasources: {
-        db: {
-            url: databaseUrl,
-        },
-    },
+    adapter: new PrismaPg({ connectionString: databaseUrl }),
 });

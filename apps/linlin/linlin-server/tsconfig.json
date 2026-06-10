@@ -17,5 +17,5 @@
             ]
         }
     },
-    "include": ["src", "../interfaces"]
+    "include": ["src", "../interfaces", "prisma.config.ts"]
 }

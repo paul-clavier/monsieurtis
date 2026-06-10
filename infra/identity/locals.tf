@@ -8,10 +8,10 @@ locals {
   oauth_host = "oauth.${var.domain}"
 
   # In-cluster DNS — used by Hydra → Kratos, by Crocus → admin APIs, by apps → Keto.
-  kratos_admin_svc  = "http://kratos-admin.${var.namespace}.svc.cluster.local"
-  hydra_admin_svc   = "http://hydra-admin.${var.namespace}.svc.cluster.local:4445"
-  keto_read_svc     = "http://keto-read.${var.namespace}.svc.cluster.local:80"
-  keto_write_svc    = "http://keto-write.${var.namespace}.svc.cluster.local:80"
+  kratos_admin_svc = "http://kratos-admin.${var.namespace}.svc.cluster.local"
+  hydra_admin_svc  = "http://hydra-admin.${var.namespace}.svc.cluster.local:4445"
+  keto_read_svc    = "http://keto-read.${var.namespace}.svc.cluster.local:80"
+  keto_write_svc   = "http://keto-write.${var.namespace}.svc.cluster.local:80"
 
   # Database DSNs. Bitnami postgres exposes the service as `postgres-postgresql`
   # (release name + `-postgresql`). We use the `postgres` superuser for simplicity
