@@ -1,13 +1,14 @@
 name: tofu-ci
 
 on:
+    # No `paths` filter: the ruleset on `*_main` requires the `ci-gate` check,
+    # so the workflow must run on every PR targeting a protected branch.
+    # detect-changes short-circuits the matrix jobs when no infra files
+    # changed, and ci-gate then passes trivially.
     pull_request:
         branches:
             - main
-        paths:
-            - infra/cloud/**
-            - infra/identity/**
-            - .github/workflows/tofu-ci.yml
+            - "*_main"
 
 permissions:
     contents: read
@@ -31,6 +32,8 @@ jobs:
                         - 'infra/cloud/**'
                       identity:
                         - 'infra/identity/**'
+                      git:
+                        - 'infra/git/**'
             - id: compute
               run: |
                   projects='[]'
@@ -39,6 +42,9 @@ jobs:
                   fi
                   if [ "${{ steps.filter.outputs.identity }}" = "true" ]; then
                     projects=$(jq -c '. + ["identity"]' <<<"$projects")
+                  fi
+                  if [ "${{ steps.filter.outputs.git }}" = "true" ]; then
+                    projects=$(jq -c '. + ["git"]' <<<"$projects")
                   fi
                   echo "projects=$projects" >> "$GITHUB_OUTPUT"
 
@@ -143,6 +149,10 @@ jobs:
             TF_VAR_hydra_system_secret: ${{ matrix.project == 'identity' && secrets.HYDRA_SYSTEM_SECRET || '' }}
             TF_VAR_google_oauth_client_id: ${{ matrix.project == 'identity' && secrets.GOOGLE_OAUTH_CLIENT_ID || '' }}
             TF_VAR_google_oauth_client_secret: ${{ matrix.project == 'identity' && secrets.GOOGLE_OAUTH_CLIENT_SECRET || '' }}
+            # `git` root needs a fine-grained PAT (Administration:write).
+            # Provider name `GH_TF_TOKEN` avoids clashing with the auto-issued
+            # GITHUB_TOKEN secret name (which GitHub reserves).
+            GITHUB_TOKEN: ${{ matrix.project == 'git' && secrets.GH_TF_TOKEN || '' }}
         steps:
             - uses: actions/checkout@v4
 
@@ -202,3 +212,17 @@ jobs:
             - name: Fail if plan errored
               if: steps.plan.outcome == 'failure'
               run: exit 1
+
+    # Single stable check name required by the `*_main` branch ruleset.
+    # Aggregates the matrix outcomes; passes when nothing failed or was
+    # cancelled (including the all-skipped case for non-infra PRs).
+    ci-gate:
+        needs: [lint, validate, security, plan]
+        if: always()
+        runs-on: ubuntu-latest
+        steps:
+            - name: aggregate
+              run: |
+                  if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+                    exit 1
+                  fi
