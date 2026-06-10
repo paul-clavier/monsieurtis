@@ -19,7 +19,7 @@ on:
                 default: ghcr.io/monsieurtis/crocus:latest
 
 jobs:
-    publish:
+    crocus-publish:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4

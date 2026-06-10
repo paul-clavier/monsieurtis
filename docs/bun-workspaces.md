@@ -10,11 +10,11 @@ The goal: get the same lightweight, "edit a lib, see it everywhere instantly" fe
 
 Most monorepo confusion comes from conflating three things that TypeScript splits across separate tools:
 
-| Layer | Question it answers | Tool |
-|---|---|---|
-| **Package graph** | "What depends on what? Where do my `node_modules` come from?" | Bun workspaces |
+| Layer                 | Question it answers                                                 | Tool                          |
+| --------------------- | ------------------------------------------------------------------- | ----------------------------- |
+| **Package graph**     | "What depends on what? Where do my `node_modules` come from?"       | Bun workspaces                |
 | **Module resolution** | "When I write `import X from '@scope/foo'`, what file gets loaded?" | Node + `package.json#exports` |
-| **Type graph** | "How does TypeScript know the types of imported packages?" | Per-package `tsconfig.json` |
+| **Type graph**        | "How does TypeScript know the types of imported packages?"          | Per-package `tsconfig.json`   |
 
 Bun workspaces only solve the first layer. The other two are configured in `package.json` and `tsconfig.json` files. A coherent setup picks one strategy and applies it consistently to all three. The strategy this article commits to is **source-first**: shared libs ship `.ts` files directly, never compiled output.
 
@@ -27,16 +27,16 @@ Workspaces are a single entry in the root `package.json`:
 ```jsonc
 // package.json (repo root)
 {
-  "name": "monorepo-root",
-  "private": true,
-  "packageManager": "bun@1.3.13",
-  "workspaces": [
-    "apps/*/*",
-    "lib/core",
-    "lib/ui",
-    "lib/tsconfig",
-    "lib/packages/*"
-  ]
+    "name": "monorepo-root",
+    "private": true,
+    "packageManager": "bun@1.3.13",
+    "workspaces": [
+        "apps/*/*",
+        "lib/core",
+        "lib/ui",
+        "lib/tsconfig",
+        "lib/packages/*",
+    ],
 }
 ```
 
@@ -84,9 +84,9 @@ Two distinctions worth being explicit about:
 
 - **`apps/<name>/interfaces/`** is not a workspace package. It's just a folder of `.ts` files that the sibling server and client both import via relative paths or the app's own `paths` alias. It belongs to one app and isn't shared across apps.
 - **`lib/core` vs `lib/packages/*`** is a useful naming convention but invisible to Bun:
-  - `lib/core` — primitives anything can use (utilities, shared domain types). One package.
-  - `lib/packages/*` — one package per external dependency you want to standardize (Prisma setup, Redis client wrapper, Kafka producer). Apps install only the ones they need.
-  - `lib/ui` — client-only UI primitives. Same idea as `core` but scoped to React.
+    - `lib/core` — primitives anything can use (utilities, shared domain types). One package.
+    - `lib/packages/*` — one package per external dependency you want to standardize (Prisma setup, Redis client wrapper, Kafka producer). Apps install only the ones they need.
+    - `lib/ui` — client-only UI primitives. Same idea as `core` but scoped to React.
 
 ---
 
@@ -97,14 +97,14 @@ This is where source-first happens. Each lib exposes its source files via the `e
 ```jsonc
 // lib/core/package.json
 {
-  "name": "@monsieurtis/core",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "exports": {
-    ".": "./src/index.ts"
-  },
-  "devDependencies": { "typescript": "6.0.2" }
+    "name": "@monsieurtis/core",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": "./src/index.ts",
+    },
+    "devDependencies": { "typescript": "6.0.2" },
 }
 ```
 
@@ -131,7 +131,7 @@ Consumers always write `import { Result } from "@monsieurtis/core"`. You can spl
 
 ### When to break the single-entry rule
 
-Add a second subpath only when a package has a clear bimodal split that *must not* mix — e.g. a `./client` half that uses browser APIs and a `./server` half that uses `fs`. Splitting prevents consumers from accidentally pulling code that can't run in their environment. Don't split for organizational neatness; that's what folders inside `src/` are for.
+Add a second subpath only when a package has a clear bimodal split that _must not_ mix — e.g. a `./client` half that uses browser APIs and a `./server` half that uses `fs`. Splitting prevents consumers from accidentally pulling code that can't run in their environment. Don't split for organizational neatness; that's what folders inside `src/` are for.
 
 ---
 
@@ -153,21 +153,21 @@ lib/packages/prisma/
 ```jsonc
 // lib/packages/prisma/package.json
 {
-  "name": "@monsieurtis/prisma",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "exports": { ".": "./src/index.ts" },
-  "dependencies": {
-    "@prisma/client": "6.7.0"
-  },
-  "peerDependencies": {
-    "@nestjs/common": "^11"
-  },
-  "scripts": {
-    "db:generate": "prisma generate --schema ./prisma/schema.prisma",
-    "db:migrate":  "prisma migrate dev --schema ./prisma/schema.prisma"
-  }
+    "name": "@monsieurtis/prisma",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": { ".": "./src/index.ts" },
+    "dependencies": {
+        "@prisma/client": "6.7.0",
+    },
+    "peerDependencies": {
+        "@nestjs/common": "^11",
+    },
+    "scripts": {
+        "db:generate": "prisma generate --schema ./prisma/schema.prisma",
+        "db:migrate": "prisma migrate dev --schema ./prisma/schema.prisma",
+    },
 }
 ```
 
@@ -176,9 +176,9 @@ App-side adoption:
 ```jsonc
 // apps/linlin/linlin-server/package.json
 {
-  "dependencies": {
-    "@monsieurtis/prisma": "workspace:*"
-  }
+    "dependencies": {
+        "@monsieurtis/prisma": "workspace:*",
+    },
 }
 ```
 
@@ -215,53 +215,53 @@ lib/tsconfig/
 ```jsonc
 // lib/tsconfig/package.json
 {
-  "name": "@monsieurtis/tsconfig",
-  "version": "0.0.0",
-  "private": true
+    "name": "@monsieurtis/tsconfig",
+    "version": "0.0.0",
+    "private": true,
 }
 ```
 
 ```jsonc
 // lib/tsconfig/base.json
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "esModuleInterop": true,
-    "isolatedModules": true,
-    "verbatimModuleSyntax": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true
-  }
+    "compilerOptions": {
+        "target": "ES2022",
+        "strict": true,
+        "noUncheckedIndexedAccess": true,
+        "esModuleInterop": true,
+        "isolatedModules": true,
+        "verbatimModuleSyntax": true,
+        "skipLibCheck": true,
+        "resolveJsonModule": true,
+    },
 }
 ```
 
 ```jsonc
 // lib/tsconfig/server.json
 {
-  "extends": "./base.json",
-  "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "lib": ["ES2022"],
-    "types": ["node"],
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
-  }
+    "extends": "./base.json",
+    "compilerOptions": {
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "lib": ["ES2022"],
+        "types": ["node"],
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+    },
 }
 ```
 
 ```jsonc
 // lib/tsconfig/client.json
 {
-  "extends": "./base.json",
-  "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "jsx": "react-jsx"
-  }
+    "extends": "./base.json",
+    "compilerOptions": {
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "lib": ["ES2022", "DOM", "DOM.Iterable"],
+        "jsx": "react-jsx",
+    },
 }
 ```
 
@@ -270,17 +270,17 @@ Each app or lib then needs four lines:
 ```jsonc
 // apps/linlin/linlin-server/tsconfig.json
 {
-  "extends": "@monsieurtis/tsconfig/server.json",
-  "compilerOptions": {
-    "outDir": "./dist",
-    "baseUrl": ".",
-    "paths": { "@/*": ["src/*"] }
-  },
-  "include": ["src"]
+    "extends": "@monsieurtis/tsconfig/server.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "baseUrl": ".",
+        "paths": { "@/*": ["src/*"] },
+    },
+    "include": ["src"],
 }
 ```
 
-### Why a *package*, not just a folder
+### Why a _package_, not just a folder
 
 Extending via npm name (`"@monsieurtis/tsconfig/server.json"`) is location-independent. Move an app from `apps/linlin/linlin-server` to `apps/linlin/services/linlin-server` and the extends still resolves. Relative paths like `../../../lib/tsconfig/server.json` would break.
 
@@ -297,9 +297,9 @@ Every workspace package gets its own `tsconfig.json`. For libs, it's just for ty
 ```jsonc
 // lib/core/tsconfig.json
 {
-  "extends": "@monsieurtis/tsconfig/base.json",
-  "compilerOptions": { "noEmit": true },
-  "include": ["src"]
+    "extends": "@monsieurtis/tsconfig/base.json",
+    "compilerOptions": { "noEmit": true },
+    "include": ["src"],
 }
 ```
 
@@ -309,7 +309,7 @@ Every workspace package gets its own `tsconfig.json`. For libs, it's just for ty
 
 A common mistake: putting `"paths": { "@monsieurtis/core/*": ["../../lib/core/src/*"] }` in an app's tsconfig. **Never do this.** `paths` is a TypeScript-only invention — Node, Bun, and bundlers don't honor it. You'll get the worst possible failure mode: types pass, runtime crashes with "Cannot find module".
 
-The correct mechanism for cross-package imports is `exports` in the shared lib's `package.json` (§4). It works for both TypeScript *and* runtime/bundlers because it's the standard Node mechanism.
+The correct mechanism for cross-package imports is `exports` in the shared lib's `package.json` (§4). It works for both TypeScript _and_ runtime/bundlers because it's the standard Node mechanism.
 
 Reserve `paths` for **intra-package** aliases only, like `@/*` mapping to `src/*` inside one app.
 
@@ -322,13 +322,13 @@ Apps build themselves; they don't depend on libs being pre-built.
 ```jsonc
 // apps/linlin/linlin-server/tsconfig.json
 {
-  "extends": "@monsieurtis/tsconfig/server.json",
-  "compilerOptions": {
-    "outDir": "./dist",
-    "baseUrl": ".",
-    "paths": { "@/*": ["src/*"] }
-  },
-  "include": ["src"]
+    "extends": "@monsieurtis/tsconfig/server.json",
+    "compilerOptions": {
+        "outDir": "./dist",
+        "baseUrl": ".",
+        "paths": { "@/*": ["src/*"] },
+    },
+    "include": ["src"],
 }
 ```
 
@@ -353,7 +353,7 @@ In strict source-first with per-app builds, **a root `tsconfig.json` is not requ
 
 Three reasons to keep one anyway, ranked:
 
-1. **CI repo-wide typecheck.** "I only build apps separately" is true for builds, but you almost certainly want CI to catch when a `lib/core` change breaks `apps/foo` *without* having to build every app individually. A solution-style root tsconfig with `references` lets `tsc -b --noEmit` from the root typecheck everything in dependency order with `.tsbuildinfo` caching.
+1. **CI repo-wide typecheck.** "I only build apps separately" is true for builds, but you almost certainly want CI to catch when a `lib/core` change breaks `apps/foo` _without_ having to build every app individually. A solution-style root tsconfig with `references` lets `tsc -b --noEmit` from the root typecheck everything in dependency order with `.tsbuildinfo` caching.
 2. **Editor experience for stray files.** Configs, scripts, root-level `.ts` files that don't belong to any package fall back to the nearest tsconfig walking up the tree. The root tsconfig is the catch-all.
 3. **Convention.** Some tools assume a root `tsconfig.json` exists.
 
@@ -362,14 +362,14 @@ If you keep one, it should be a solution file — emits nothing on its own, just
 ```jsonc
 // tsconfig.json (repo root)
 {
-  "files": [],
-  "references": [
-    { "path": "./lib/core" },
-    { "path": "./lib/ui" },
-    { "path": "./lib/packages/prisma" },
-    { "path": "./apps/linlin/linlin-server" },
-    { "path": "./apps/linlin/linlin-client" }
-  ]
+    "files": [],
+    "references": [
+        { "path": "./lib/core" },
+        { "path": "./lib/ui" },
+        { "path": "./lib/packages/prisma" },
+        { "path": "./apps/linlin/linlin-server" },
+        { "path": "./apps/linlin/linlin-client" },
+    ],
 }
 ```
 
@@ -385,24 +385,24 @@ With everything above in place, adding a new app is mechanical:
 
 1. `mkdir -p apps/foo/foo-server/src`
 2. Create `apps/foo/foo-server/package.json`:
-   ```jsonc
-   {
-     "name": "foo-server",
-     "version": "0.0.1",
-     "private": true,
-     "type": "module",
-     "scripts": {
-       "start:dev": "nest start --watch",
-       "build": "nest build"
-     },
-     "dependencies": {
-       "@monsieurtis/core": "workspace:*",
-       "@monsieurtis/prisma": "workspace:*",
-       "@nestjs/common": "^11",
-       "@nestjs/core": "^11"
-     }
-   }
-   ```
+    ```jsonc
+    {
+        "name": "foo-server",
+        "version": "0.0.1",
+        "private": true,
+        "type": "module",
+        "scripts": {
+            "start:dev": "nest start --watch",
+            "build": "nest build",
+        },
+        "dependencies": {
+            "@monsieurtis/core": "workspace:*",
+            "@monsieurtis/prisma": "workspace:*",
+            "@nestjs/common": "^11",
+            "@nestjs/core": "^11",
+        },
+    }
+    ```
 3. Create `apps/foo/foo-server/tsconfig.json` extending `@monsieurtis/tsconfig/server.json`.
 4. From the repo root: `bun install`.
 5. Write code, importing from `@monsieurtis/*`. No build step on the lib side. Ever.
@@ -414,21 +414,27 @@ That's the uv-workspaces feel.
 ## 11. Common pitfalls
 
 ### Mixing source-first and build-first
+
 The biggest source of friction. If `@monsieurtis/core` exports `.ts` but `@monsieurtis/prisma` exports `dist/index.js`, you have to remember which packages need a build step, run `bun build` in the right ones before edits propagate, and debug stale-dist issues. Pick one strategy and apply it everywhere.
 
 ### TypeScript version drift
-A `typescript` dependency at the root *and* in individual apps with different versions causes subtle bugs: types from one TS version don't always match the other, language servers get confused, `skipLibCheck` masks failures inconsistently. Hoist a single TypeScript version to the root and remove it from app `devDependencies`.
+
+A `typescript` dependency at the root _and_ in individual apps with different versions causes subtle bugs: types from one TS version don't always match the other, language servers get confused, `skipLibCheck` masks failures inconsistently. Hoist a single TypeScript version to the root and remove it from app `devDependencies`.
 
 ### `paths` aliases for cross-package imports
+
 Covered in §7. Use `exports`, not `paths`, for anything that crosses a package boundary.
 
 ### Circular imports through barrels
-`a.ts` imports from `"./index"` (the barrel), barrel re-exports `b.ts`, `b.ts` imports from `"./index"` → cycle. Keep internal imports on relative paths (`./a`, `./b`); reserve the barrel for *external* consumers.
+
+`a.ts` imports from `"./index"` (the barrel), barrel re-exports `b.ts`, `b.ts` imports from `"./index"` → cycle. Keep internal imports on relative paths (`./a`, `./b`); reserve the barrel for _external_ consumers.
 
 ### Forgetting `peerDependencies` for framework packages
+
 Pre-bundling `@nestjs/common` or `react` as a hard `dependency` of a shared package means consumers may end up with duplicate copies, breaking DI and React contexts. Use `peerDependencies` for any framework the package decorates.
 
 ### `apps/*` glob picking up the wrong level
+
 If your apps have a server+client structure, `apps/*` matches `apps/linlin` (the grouping folder). Use `apps/*/*` to target only the actual packages.
 
 ---

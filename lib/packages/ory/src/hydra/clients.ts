@@ -78,7 +78,10 @@ export const acceptConsentRequest = async (
     body: {
         grant_scope: string[];
         grant_access_token_audience?: string[];
-        session?: { id_token?: Record<string, unknown>; access_token?: Record<string, unknown> };
+        session?: {
+            id_token?: Record<string, unknown>;
+            access_token?: Record<string, unknown>;
+        };
         remember?: boolean;
         remember_for?: number;
     },
@@ -95,7 +98,9 @@ export const acceptConsentRequest = async (
     return (await res.json()) as CompletedRequest;
 };
 
-export const listClients = async (client: HydraAdminClient): Promise<HydraClient[]> => {
+export const listClients = async (
+    client: HydraAdminClient,
+): Promise<HydraClient[]> => {
     const res = await hydra(client)(`${client.adminUrl}/admin/clients`);
     if (!res.ok) throw new Error(`listClients failed (${res.status})`);
     return (await res.json()) as HydraClient[];

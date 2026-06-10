@@ -6,7 +6,9 @@ import { createServerFn } from "@tanstack/react-start";
  * serve a request. We don't fan out to Kratos/Hydra/Keto here — those have
  * their own probes, and a green Crocus is independent of them.
  */
-const healthFn = createServerFn({ method: "GET" }).handler(async () => ({ ok: true }));
+const healthFn = createServerFn({ method: "GET" }).handler(async () => ({
+    ok: true,
+}));
 
 export const Route = createFileRoute("/healthz")({
     loader: () => healthFn(),

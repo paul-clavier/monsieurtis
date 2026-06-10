@@ -11,7 +11,9 @@
             "@/*": ["./src/*"],
             "@/interfaces/*": ["../interfaces/*"],
             "@monsieurtis/core": ["../../../lib/core/src/index.ts"],
-            "@monsieurtis/prisma": ["../../../lib/packages/prisma/src/index.ts"],
+            "@monsieurtis/prisma": [
+                "../../../lib/packages/prisma/src/index.ts"
+            ],
             "@monsieurtis/nest-rest-crud": [
                 "../../../lib/packages/nest-rest-crud/src/index.ts"
             ]
