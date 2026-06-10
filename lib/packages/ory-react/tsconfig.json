@@ -1,5 +1,5 @@
 {
-    "extends": "@monsieurtis/tsconfig/base.json",
+    "extends": "@monsieurtis/tsconfig/client.json",
     "compilerOptions": {
         "noEmit": true
     },

@@ -10,6 +10,6 @@
  * land back on the SSO console with a friendly message and the app launcher.
  */
 
-export * from "./guards/keto-access.guard";
 export * from "./decorators/require-app-access.decorator";
+export * from "./guards/keto-access.guard";
 export * from "./ory.module";
