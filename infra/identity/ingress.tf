@@ -14,8 +14,10 @@
 # Admin APIs (kratos-admin, hydra-admin, keto-*) are never exposed.
 ###############################################################################
 
-resource "kubernetes_manifest" "ingress_login" {
-  manifest = {
+# Uses kubectl_manifest (not kubernetes_manifest) so the provider tolerates
+# the cluster being unknown at plan time — see providers.tf for the rationale.
+resource "kubectl_manifest" "ingress_login" {
+  yaml_body = yamlencode({
     apiVersion = "traefik.io/v1alpha1"
     kind       = "IngressRoute"
     metadata = {
@@ -49,7 +51,7 @@ resource "kubernetes_manifest" "ingress_login" {
         },
       ]
     }
-  }
+  })
 
   depends_on = [
     helm_release.kratos,
@@ -57,8 +59,8 @@ resource "kubernetes_manifest" "ingress_login" {
   ]
 }
 
-resource "kubernetes_manifest" "ingress_oauth" {
-  manifest = {
+resource "kubectl_manifest" "ingress_oauth" {
+  yaml_body = yamlencode({
     apiVersion = "traefik.io/v1alpha1"
     kind       = "IngressRoute"
     metadata = {
@@ -77,7 +79,7 @@ resource "kubernetes_manifest" "ingress_oauth" {
         }]
       }]
     }
-  }
+  })
 
   depends_on = [helm_release.hydra]
 }
