@@ -43,10 +43,10 @@ jobs:
                   echo "projects=$projects" >> "$GITHUB_OUTPUT"
 
     quality-tofu-checks:
-        needs: detect-changes
+        needs: detect-changes-tofu-ci
         # Skip on fork PRs: plan needs secrets, which must never reach a fork.
         if: >-
-            needs.detect-changes.outputs.projects != '[]' &&
+            needs.detect-changes-tofu-ci.outputs.projects != '[]' &&
             github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ubuntu-latest
         environment: production
@@ -57,7 +57,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                project: ${{ fromJson(needs.detect-changes.outputs.projects) }}
+                project: ${{ fromJson(needs.detect-changes-tofu-ci.outputs.projects) }}
         env:
             # Shared: state backend + civo provider, used by every root.
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

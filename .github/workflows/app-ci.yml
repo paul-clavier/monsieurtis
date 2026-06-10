@@ -40,15 +40,15 @@ jobs:
               run: |
                   matrix=$(bun scripts/affected.ts "origin/${{ github.base_ref }}")
                   echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
-                  echo "Affected matrix: $matrix"
+                  echo "Detect apps checks matrix: $matrix"
 
     quality-ts-checks:
-        needs: affected
-        if: needs.affected.outputs.matrix != '{"include":[]}'
+        needs: detect-apps-checks
+        if: needs.detect-apps-checks.outputs.matrix != '{"include":[]}'
         runs-on: ubuntu-latest
         strategy:
             fail-fast: false
-            matrix: ${{ fromJson(needs.affected.outputs.matrix) }}
+            matrix: ${{ fromJson(needs.detect-apps-checks.outputs.matrix) }}
         name: quality-ts-checks (${{ matrix.name }})
         steps:
             - uses: actions/checkout@v4
