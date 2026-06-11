@@ -100,9 +100,11 @@ resource "cloudflare_email_routing_settings" "monsieurtis" {
 # The auto-managed SPF (`v=spf1 include:_spf.mx.cloudflare.net ~all`) must be merged with
 # Resend's `include:_spf.resend.com` in the Cloudflare dashboard once Resend is added — TF
 # does not manage the record contents directly.
+# `name` is intentionally unset: it is only for the subdomain feature, the API never echoes
+# it back on read, and setting it to the apex causes a perpetual diff whose PATCH fails with
+# 404 "Subdomain not found" (the PATCH endpoint is subdomain-only).
 resource "cloudflare_email_routing_dns" "monsieurtis" {
   zone_id = var.cloudflare_zone_id
-  name    = var.domain
 
   depends_on = [cloudflare_email_routing_settings.monsieurtis]
 }
