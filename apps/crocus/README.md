@@ -46,6 +46,6 @@ bun run dev
 
 ## Deploying
 
-CI builds and pushes the image as `ghcr.io/monsieurtis/crocus:<sha>`. The
+CI builds and pushes the image as `ghcr.io/paul-clavier/crocus:<sha>`. The
 `infra/identity` Terraform module references the image tag via
 `var.crocus_image` and rolls out a new Deployment on apply.

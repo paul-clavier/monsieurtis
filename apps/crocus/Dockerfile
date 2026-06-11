@@ -4,7 +4,7 @@
 # @monsieurtis/ui, @monsieurtis/ory, @monsieurtis/tsconfig). Build from the
 # repo root:
 #
-#   docker build -f apps/crocus/Dockerfile -t ghcr.io/monsieurtis/crocus:dev .
+#   docker build -f apps/crocus/Dockerfile -t ghcr.io/paul-clavier/crocus:dev .
 
 ###############################################################################
 # 1. Install dependencies

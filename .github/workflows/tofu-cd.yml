@@ -12,10 +12,12 @@ permissions:
 jobs:
     build-crocus:
         if: github.ref_name == 'infra_identity_main'
+        permissions:
+            contents: read
+            packages: write
         uses: ./.github/workflows/crocus-publish.yml
         with:
-            image: ghcr.io/monsieurtis/crocus:${{ github.sha }}
-        secrets: inherit
+            image: ghcr.io/paul-clavier/crocus:${{ github.sha }}
 
     deploy-tofu:
         needs: [build-crocus]
@@ -53,7 +55,7 @@ jobs:
             TF_VAR_google_oauth_client_secret: ${{ github.ref_name == 'infra_identity_main' && secrets.GOOGLE_OAUTH_CLIENT_SECRET || '' }}
             TF_VAR_smtp_connection_uri: ${{ github.ref_name == 'infra_identity_main' && secrets.SMTP_CONNECTION_URI || '' }}
             # Pin the deploy to the immutable image just published by build-crocus.
-            TF_VAR_crocus_image: ${{ github.ref_name == 'infra_identity_main' && format('ghcr.io/monsieurtis/crocus:{0}', github.sha) || '' }}
+            TF_VAR_crocus_image: ${{ github.ref_name == 'infra_identity_main' && format('ghcr.io/paul-clavier/crocus:{0}', github.sha) || '' }}
         steps:
             - uses: actions/checkout@v4
 
