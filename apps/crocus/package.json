@@ -41,6 +41,7 @@
         "@types/react-dom": "catalog:react",
         "@vitejs/plugin-react": "catalog:build",
         "eslint": "catalog:tooling",
+        "nitro": "catalog:build",
         "prettier": "catalog:tooling",
         "vite": "catalog:build",
         "vitest": "catalog:build"
