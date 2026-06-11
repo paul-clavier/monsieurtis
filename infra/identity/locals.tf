@@ -13,10 +13,10 @@ locals {
   keto_read_svc    = "http://keto-read.${var.namespace}.svc.cluster.local:80"
   keto_write_svc   = "http://keto-write.${var.namespace}.svc.cluster.local:80"
 
-  # Database DSNs. Bitnami postgres exposes the service as `postgres-postgresql`
-  # (release name + `-postgresql`). We use the `postgres` superuser for simplicity
+  # Database DSNs. CloudNativePG exposes the primary as `<cluster>-rw`
+  # (cluster name from postgres.tf). We use the `postgres` superuser for simplicity
   # in a single-tenant cluster — split into per-service roles if you ever multi-tenant.
-  pg_host     = "postgres-postgresql.${var.namespace}.svc.cluster.local"
+  pg_host     = "postgres-rw.${var.namespace}.svc.cluster.local"
   pg_dsn_base = "postgres://postgres:${urlencode(var.postgres_password)}@${local.pg_host}:5432"
 
   kratos_dsn = "${local.pg_dsn_base}/kratos?sslmode=disable&max_conns=20&max_idle_conns=4"

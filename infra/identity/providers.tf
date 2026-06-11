@@ -40,3 +40,12 @@ provider "kubectl" {
   cluster_ca_certificate = base64decode(local.cluster["certificate-authority-data"])
   load_config_file       = false
 }
+
+# alekc fork — same connection, see versions.tf for why both exist.
+provider "alekc" {
+  host                   = local.cluster.server
+  client_certificate     = base64decode(local.user["client-certificate-data"])
+  client_key             = base64decode(local.user["client-key-data"])
+  cluster_ca_certificate = base64decode(local.cluster["certificate-authority-data"])
+  load_config_file       = false
+}
