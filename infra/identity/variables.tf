@@ -152,15 +152,15 @@ variable "user_groups" {
 variable "chart_versions" {
   description = "Helm chart versions for the identity stack."
   type = object({
-    postgresql = string
-    kratos     = string
-    hydra      = string
-    keto       = string
+    cloudnative_pg = string
+    kratos         = string
+    hydra          = string
+    keto           = string
   })
   default = {
-    postgresql = "16.3.0"
-    kratos     = "0.59.0"
-    hydra      = "0.62.0"
-    keto       = "0.45.0"
+    cloudnative_pg = "0.28.2"
+    kratos         = "0.59.0"
+    hydra          = "0.62.0"
+    keto           = "0.45.0"
   }
 }

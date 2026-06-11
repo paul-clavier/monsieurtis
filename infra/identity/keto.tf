@@ -22,7 +22,7 @@ resource "helm_release" "keto" {
   chart      = "keto"
   version    = var.chart_versions.keto
 
-  depends_on = [helm_release.postgres]
+  depends_on = [kubectl_manifest.postgres_cluster]
 
   values = [yamlencode({
     keto = {

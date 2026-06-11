@@ -24,7 +24,7 @@ resource "helm_release" "hydra" {
   chart      = "hydra"
   version    = var.chart_versions.hydra
 
-  depends_on = [helm_release.postgres]
+  depends_on = [kubectl_manifest.postgres_cluster]
 
   values = [yamlencode({
     hydra = {

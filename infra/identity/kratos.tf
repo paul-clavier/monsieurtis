@@ -30,7 +30,7 @@ resource "helm_release" "kratos" {
   chart      = "kratos"
   version    = var.chart_versions.kratos
 
-  depends_on = [helm_release.postgres]
+  depends_on = [kubectl_manifest.postgres_cluster]
 
   values = [yamlencode({
     # Run the auto-migration init container before each pod start.
