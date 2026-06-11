@@ -70,10 +70,10 @@ jobs:
 
             # The cluster firewall accepts traffic only from the exit node's
             # public IP. Route the runner's egress through it via tailnet so the
-            # kubernetes/helm/kubectl providers can reach the kube API.
+            # kubernetes/helm/kubectl providers can reach the kube API. Both
+            # projects talk to the kube API, so this runs unconditionally.
             # tag:ci devices are ephemeral and deregister when the job ends.
             - name: Tailscale up
-              if: env.PROJECT == 'cloud'
               uses: tailscale/github-action@v3
               with:
                   oauth-client-id: ${{ secrets.TAILSCALE_OAUTH_CLIENT_ID }}
@@ -88,7 +88,6 @@ jobs:
             # 2. --exit-node-allow-lan-access keeps LAN/private ranges on the direct
             # route while everything public egresses via the exit node.
             - name: Route kube API traffic through the exit node
-              if: env.PROJECT == 'cloud'
               timeout-minutes: 2
               run: until sudo tailscale set --exit-node=monsieurtis-exit --exit-node-allow-lan-access; do sleep 2; done
 
