@@ -79,7 +79,7 @@ variable "smtp_from_address" {
 variable "crocus_image" {
   description = "Container image for the Crocus app (login/consent UI). Built+pushed from apps/crocus."
   type        = string
-  default     = "ghcr.io/monsieurtis/crocus:latest"
+  default     = "ghcr.io/paul-clavier/crocus:latest"
 }
 
 variable "registered_apps" {
