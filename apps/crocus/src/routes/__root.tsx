@@ -5,7 +5,7 @@ import {
     Scripts,
 } from "@tanstack/react-router";
 
-import { LighthouseMark, LighthouseMotif } from "../components/brand";
+import { LighthouseMark } from "../components/brand";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
@@ -45,14 +45,19 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 function RootShell() {
     return (
         <div className="relative min-h-screen flex flex-col overflow-hidden bg-background text-foreground antialiased">
-            <LighthouseMotif className="pointer-events-none absolute -right-8 -bottom-8 h-110 w-69 opacity-[0.1] select-none" />
+            <img
+                src="/lighthouse.webp"
+                alt=""
+                aria-hidden
+                className="pointer-events-none absolute -right-10 -bottom-6 w-120 opacity-[0.12] select-none"
+            />
             <main className="relative flex-1 flex items-center justify-center px-4 py-12">
                 <Outlet />
             </main>
             <footer className="relative border-t border-border/40 py-4 text-xs text-muted-foreground">
                 <div className="flex items-center justify-center gap-1.5">
                     <LighthouseMark className="h-4 w-4" />
-                    <span>MonsieurTis SSO</span>
+                    <span>Crocus - MonsieurTis SSO</span>
                 </div>
             </footer>
         </div>
