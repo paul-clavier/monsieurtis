@@ -45,13 +45,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 function RootShell() {
     return (
         <div className="relative min-h-screen flex flex-col overflow-hidden bg-background text-foreground antialiased">
-            <img
-                src="/lighthouse.webp"
-                alt=""
-                aria-hidden
-                className="pointer-events-none absolute -right-10 -bottom-6 w-120 opacity-[0.12] select-none"
-            />
             <main className="relative flex-1 flex items-center justify-center px-4 py-12">
+                {/* Anchored to main's bottom edge = the footer's top border. */}
+                <img
+                    src="/lighthouse.webp"
+                    alt=""
+                    aria-hidden
+                    className="pointer-events-none absolute right-12 bottom-0 h-[70%] w-auto opacity-[0.14] select-none"
+                />
                 <Outlet />
             </main>
             <footer className="relative border-t border-border/40 py-4 text-xs text-muted-foreground">
