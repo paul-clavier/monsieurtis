@@ -7,6 +7,8 @@ import { Button } from "@monsieurtis/ui/components/button";
 import { Input } from "@monsieurtis/ui/components/input";
 import { Label } from "@monsieurtis/ui/components/label";
 
+import { GoogleLogo } from "./brand";
+
 /**
  * Renders a Kratos self-service flow as a plain HTML form posting straight
  * back to Kratos (`flow.ui.action`). No client JS is required: Kratos browser
@@ -44,6 +46,7 @@ const InputNode = ({ node }: { node: KratosUiNode }) => {
 
     if (type === "submit" || type === "button") {
         const isOidc = node.group === "oidc";
+        const provider = isOidc ? String(value ?? "") : "";
         return (
             <Button
                 type="submit"
@@ -52,6 +55,9 @@ const InputNode = ({ node }: { node: KratosUiNode }) => {
                 variant={isOidc ? "outline" : "default"}
                 className="w-full"
             >
+                {provider === "google" ? (
+                    <GoogleLogo className="size-4" />
+                ) : null}
                 {isOidc && node.meta.label
                     ? `Continue with ${labelText(node)}`
                     : (labelText(node) ?? "Submit")}
