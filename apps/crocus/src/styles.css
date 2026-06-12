@@ -1,6 +1,34 @@
 @import "../../../lib/ui/styles/globals.css";
 @source "../../../lib/ui/components/**/*.{ts,tsx}";
 
+/*
+ * Crocus theme — always dark, regardless of OS preference (the `dark` class
+ * is hard-coded on <html> in __root.tsx).
+ *
+ * Palette references the crocus flower: deep violet petals with a
+ * red/saffron heart. Purple carries the surfaces, red carries the actions.
+ */
+.dark {
+    --background: oklch(0.17 0.045 305);
+    --foreground: oklch(0.93 0.015 300);
+    --card: oklch(0.22 0.055 305);
+    --card-foreground: oklch(0.93 0.015 300);
+    --popover: oklch(0.24 0.055 305);
+    --popover-foreground: oklch(0.93 0.015 300);
+    --primary: oklch(0.55 0.21 25);
+    --primary-foreground: oklch(0.97 0.01 25);
+    --secondary: oklch(0.28 0.06 305);
+    --secondary-foreground: oklch(0.93 0.015 300);
+    --muted: oklch(0.27 0.05 305);
+    --muted-foreground: oklch(0.72 0.03 300);
+    --accent: oklch(0.32 0.08 310);
+    --accent-foreground: oklch(0.95 0.01 300);
+    --destructive: oklch(0.6 0.22 25);
+    --border: oklch(0.93 0.02 300 / 12%);
+    --input: oklch(0.93 0.02 300 / 16%);
+    --ring: oklch(0.55 0.18 25);
+}
+
 * {
     box-sizing: border-box;
 }

@@ -10,7 +10,9 @@ export default defineConfig({
     plugins: [
         devtools(),
         tailwindcss(),
-        tanstackStart(),
+        tanstackStart({
+            router: { quoteStyle: "double", semicolons: true },
+        }),
         nitro({ preset: "bun" }),
         viteReact(),
     ],
