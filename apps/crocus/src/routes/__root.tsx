@@ -47,11 +47,12 @@ function RootShell() {
         <div className="relative min-h-screen flex flex-col overflow-hidden bg-background text-foreground antialiased">
             <main className="relative flex-1 flex items-center justify-center px-4 py-12">
                 {/* Anchored to main's bottom edge = the footer's top border. */}
+                {/* Hidden below lg so it can never sit under the centred card. */}
                 <img
-                    src="/lighthouse.webp"
+                    src="/lighthouse.webp?v=2"
                     alt=""
                     aria-hidden
-                    className="pointer-events-none absolute right-12 bottom-0 h-[70%] w-auto opacity-[0.14] select-none"
+                    className="pointer-events-none absolute right-10 bottom-0 hidden h-[55%] max-h-96 w-auto opacity-[0.14] select-none lg:block"
                 />
                 <Outlet />
             </main>
