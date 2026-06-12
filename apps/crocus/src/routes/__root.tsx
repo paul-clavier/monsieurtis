@@ -1,4 +1,9 @@
-import { createRootRoute, Outlet } from "@tanstack/react-router";
+import {
+    createRootRoute,
+    HeadContent,
+    Outlet,
+    Scripts,
+} from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
 
@@ -14,8 +19,23 @@ export const Route = createRootRoute({
         ],
         links: [{ rel: "stylesheet", href: appCss }],
     }),
+    shellComponent: RootDocument,
     component: RootShell,
 });
+
+function RootDocument({ children }: { children: React.ReactNode }) {
+    return (
+        <html lang="en">
+            <head>
+                <HeadContent />
+            </head>
+            <body>
+                {children}
+                <Scripts />
+            </body>
+        </html>
+    );
+}
 
 function RootShell() {
     return (
