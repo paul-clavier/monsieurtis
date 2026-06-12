@@ -20,6 +20,7 @@ export default [
             "prettier.config.js",
             ".output",
             ".nitro",
+            "src/routeTree.gen.ts",
         ],
     },
 ];
