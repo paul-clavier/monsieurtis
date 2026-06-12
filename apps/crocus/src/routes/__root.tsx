@@ -5,7 +5,7 @@ import {
     Scripts,
 } from "@tanstack/react-router";
 
-import { CrocusMotif, LighthouseMark } from "../components/brand";
+import { LighthouseMark, LighthouseMotif } from "../components/brand";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
@@ -45,7 +45,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 function RootShell() {
     return (
         <div className="relative min-h-screen flex flex-col overflow-hidden bg-background text-foreground antialiased">
-            <CrocusMotif className="pointer-events-none absolute -right-12 -bottom-10 h-105 w-87 opacity-[0.13] select-none" />
+            <LighthouseMotif className="pointer-events-none absolute -right-8 -bottom-8 h-110 w-69 opacity-[0.1] select-none" />
             <main className="relative flex-1 flex items-center justify-center px-4 py-12">
                 <Outlet />
             </main>

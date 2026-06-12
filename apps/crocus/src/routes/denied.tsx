@@ -93,6 +93,9 @@ function DeniedPage() {
                 <Button asChild variant="ghost" className="w-full">
                     <Link to="/">Back to launcher</Link>
                 </Button>
+                <Button asChild variant="ghost" className="w-full">
+                    <a href="/logout">Sign out</a>
+                </Button>
             </CardContent>
         </Card>
     );

@@ -71,6 +71,9 @@ function Launcher() {
                         </Button>
                     ))
                 )}
+                <Button asChild variant="ghost" className="w-full">
+                    <a href="/logout">Sign out</a>
+                </Button>
             </CardContent>
         </Card>
     );

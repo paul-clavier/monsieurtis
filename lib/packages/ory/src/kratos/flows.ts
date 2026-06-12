@@ -107,3 +107,27 @@ export const getRecoveryFlow = (
     cookieHeader: string,
 ): Promise<KratosFlow | null> =>
     getSelfServiceFlow(client, "recovery", flowId, cookieHeader);
+
+/**
+ * Resolve the one-shot logout URL for the browser's current session.
+ * Visiting the returned URL completes the logout at Kratos and redirects to
+ * the configured `default_browser_return_url`. Returns null when there is no
+ * active session (nothing to log out of).
+ */
+export const getLogoutUrl = async (
+    client: KratosPublicClient,
+    cookieHeader: string,
+): Promise<string | null> => {
+    const f = client.fetch ?? fetch;
+    const res = await f(`${client.publicUrl}/self-service/logout/browser`, {
+        method: "GET",
+        headers: { Cookie: cookieHeader, Accept: "application/json" },
+    });
+
+    if (res.status === 401 || res.status === 404) return null;
+    if (!res.ok) {
+        throw new Error(`Kratos logout/browser failed (${res.status})`);
+    }
+    const body = (await res.json()) as { logout_url?: string };
+    return body.logout_url ?? null;
+};
