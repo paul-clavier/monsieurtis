@@ -1,3 +1,4 @@
+import { getRegistrationFlow } from "@monsieurtis/ory";
 import {
     Card,
     CardContent,
@@ -9,6 +10,10 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+import { FlowForm } from "../components/flow-form";
+import { kratosPublic } from "../server/ory";
+import { getCookieHeader } from "../server/request";
+
 /**
  * /registration handles two states:
  *
@@ -16,15 +21,23 @@ import { z } from "zod";
  *                   browser flow. Kratos will redirect back here with `?flow=`.
  *
  *   `?flow=…`     → Kratos initialised a flow whose `ui_url` is /registration.
- *                   For v1 we render a placeholder; future polish renders the
- *                   flow's UI nodes inline using @monsieurtis/ui form components.
+ *                   Fetch it (forwarding the CSRF cookie) and render
+ *                   `flow.ui.nodes` — traits, password, Google OIDC.
  */
 const search = z.object({ flow: z.string().optional() });
 
 const startRegistration = createServerFn({ method: "GET" })
     .inputValidator((d: unknown) => search.parse(d))
     .handler(async ({ data }) => {
-        if (data.flow) return { flow: data.flow }; // render the placeholder
+        if (data.flow) {
+            const flow = await getRegistrationFlow(
+                kratosPublic,
+                data.flow,
+                getCookieHeader(),
+            );
+            if (flow) return { flow };
+            // Expired/foreign flow → fall through and start a fresh one.
+        }
 
         const returnTo = encodeURIComponent(
             `${process.env.PUBLIC_AUTH_ORIGIN}/`,
@@ -48,17 +61,17 @@ function RegistrationPage() {
             <CardHeader>
                 <CardTitle>Create your MonsieurTis account</CardTitle>
                 <CardDescription>
-                    Flow <span className="font-mono text-xs">{data.flow}</span>
+                    Register with a password or continue with Google.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-                The Kratos flow renderer is not yet implemented in Crocus. For
-                now, complete registration by submitting forms directly to
-                Kratos at <code>/self-service</code>. See{" "}
-                <a className="underline" href="/login">
-                    /login
-                </a>{" "}
-                when you&apos;re done.
+            <CardContent className="space-y-4">
+                <FlowForm flow={data.flow} />
+                <p className="text-center text-sm text-muted-foreground">
+                    Already have an account?{" "}
+                    <a className="underline" href="/login">
+                        Sign in
+                    </a>
+                </p>
             </CardContent>
         </Card>
     );

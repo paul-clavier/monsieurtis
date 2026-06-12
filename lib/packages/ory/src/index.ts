@@ -16,5 +16,6 @@ export * from "./hydra/clients";
 export * from "./keto/check";
 export * from "./keto/expand";
 export * from "./keto/write";
+export * from "./kratos/flows";
 export * from "./kratos/session";
 export * from "./types";

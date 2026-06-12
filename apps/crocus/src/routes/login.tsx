@@ -1,5 +1,9 @@
-import { acceptLoginRequest, getLoginRequest, whoami } from "@monsieurtis/ory";
-import { Button } from "@monsieurtis/ui/components/button";
+import {
+    acceptLoginRequest,
+    getLoginFlow,
+    getLoginRequest,
+    whoami,
+} from "@monsieurtis/ory";
 import {
     Card,
     CardContent,
@@ -11,6 +15,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+import { FlowForm } from "../components/flow-form";
 import { hydraAdmin, kratosPublic } from "../server/ory";
 import { getCookieHeader } from "../server/request";
 
@@ -46,9 +51,24 @@ const handleLogin = createServerFn({ method: "GET" })
         );
 
         // Case A: Kratos initialised a login flow whose `ui_url` is /login —
-        // render the form. (For v1 we just acknowledge it; future polish
-        // renders flow.ui.nodes inline.)
-        if (data.flow) return { mode: "render-flow" as const, flow: data.flow };
+        // fetch it (forwarding the CSRF cookie) and render `flow.ui.nodes`.
+        // An unfetchable flow (expired/foreign) silently restarts a fresh one
+        // instead of stranding the user on an error screen.
+        if (data.flow) {
+            const flow = await getLoginFlow(
+                kratosPublic,
+                data.flow,
+                cookieHeader,
+            );
+            if (flow) return { flow };
+
+            const returnTo = encodeURIComponent(
+                `${process.env.PUBLIC_AUTH_ORIGIN}/`,
+            );
+            throw redirect({
+                href: `${process.env.KRATOS_PUBLIC_URL}/self-service/login/browser?return_to=${returnTo}`,
+            });
+        }
 
         // Case B: Hydra is asking for a login on behalf of an OAuth client.
         if (data.login_challenge) {
@@ -96,21 +116,22 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
     const data = Route.useLoaderData();
 
-    // Hit only when Kratos returned us with a `flow=...` to render. For v1 we
-    // show a placeholder; future polish renders `flow.ui.nodes` inline using
-    // `@monsieurtis/ui` form components (password input + "Continue with Google").
     return (
         <Card className="w-full max-w-md">
             <CardHeader>
                 <CardTitle>Sign in to MonsieurTis</CardTitle>
                 <CardDescription>
-                    Flow <span className="font-mono text-xs">{data.flow}</span>
+                    Use your account or continue with Google.
                 </CardDescription>
             </CardHeader>
-            <CardContent>
-                <Button asChild variant="outline" className="w-full">
-                    <a href="/login">Restart login</a>
-                </Button>
+            <CardContent className="space-y-4">
+                <FlowForm flow={data.flow} />
+                <p className="text-center text-sm text-muted-foreground">
+                    No account yet?{" "}
+                    <a className="underline" href="/registration">
+                        Register
+                    </a>
+                </p>
             </CardContent>
         </Card>
     );
