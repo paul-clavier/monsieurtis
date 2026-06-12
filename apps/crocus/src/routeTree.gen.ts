@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from "./routes/__root";
 import { Route as RegistrationRouteImport } from "./routes/registration";
 import { Route as RecoveryRouteImport } from "./routes/recovery";
+import { Route as LogoutRouteImport } from "./routes/logout";
 import { Route as LoginRouteImport } from "./routes/login";
 import { Route as HealthzRouteImport } from "./routes/healthz";
 import { Route as DeniedRouteImport } from "./routes/denied";
@@ -25,6 +26,11 @@ const RegistrationRoute = RegistrationRouteImport.update({
 const RecoveryRoute = RecoveryRouteImport.update({
   id: "/recovery",
   path: "/recovery",
+  getParentRoute: () => rootRouteImport,
+} as any);
+const LogoutRoute = LogoutRouteImport.update({
+  id: "/logout",
+  path: "/logout",
   getParentRoute: () => rootRouteImport,
 } as any);
 const LoginRoute = LoginRouteImport.update({
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   "/denied": typeof DeniedRoute;
   "/healthz": typeof HealthzRoute;
   "/login": typeof LoginRoute;
+  "/logout": typeof LogoutRoute;
   "/recovery": typeof RecoveryRoute;
   "/registration": typeof RegistrationRoute;
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   "/denied": typeof DeniedRoute;
   "/healthz": typeof HealthzRoute;
   "/login": typeof LoginRoute;
+  "/logout": typeof LogoutRoute;
   "/recovery": typeof RecoveryRoute;
   "/registration": typeof RegistrationRoute;
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   "/denied": typeof DeniedRoute;
   "/healthz": typeof HealthzRoute;
   "/login": typeof LoginRoute;
+  "/logout": typeof LogoutRoute;
   "/recovery": typeof RecoveryRoute;
   "/registration": typeof RegistrationRoute;
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | "/denied"
     | "/healthz"
     | "/login"
+    | "/logout"
     | "/recovery"
     | "/registration";
   fileRoutesByTo: FileRoutesByTo;
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | "/denied"
     | "/healthz"
     | "/login"
+    | "/logout"
     | "/recovery"
     | "/registration";
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | "/denied"
     | "/healthz"
     | "/login"
+    | "/logout"
     | "/recovery"
     | "/registration";
   fileRoutesById: FileRoutesById;
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   DeniedRoute: typeof DeniedRoute;
   HealthzRoute: typeof HealthzRoute;
   LoginRoute: typeof LoginRoute;
+  LogoutRoute: typeof LogoutRoute;
   RecoveryRoute: typeof RecoveryRoute;
   RegistrationRoute: typeof RegistrationRoute;
 }
@@ -135,6 +148,13 @@ declare module "@tanstack/react-router" {
       path: "/recovery";
       fullPath: "/recovery";
       preLoaderRoute: typeof RecoveryRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/logout": {
+      id: "/logout";
+      path: "/logout";
+      fullPath: "/logout";
+      preLoaderRoute: typeof LogoutRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     "/login": {
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   DeniedRoute: DeniedRoute,
   HealthzRoute: HealthzRoute,
   LoginRoute: LoginRoute,
+  LogoutRoute: LogoutRoute,
   RecoveryRoute: RecoveryRoute,
   RegistrationRoute: RegistrationRoute,
 };

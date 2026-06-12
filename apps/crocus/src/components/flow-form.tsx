@@ -1,4 +1,8 @@
-import type { KratosFlow, KratosUiMessage, KratosUiNode } from "@monsieurtis/ory";
+import type {
+    KratosFlow,
+    KratosUiMessage,
+    KratosUiNode,
+} from "@monsieurtis/ory";
 import { Button } from "@monsieurtis/ui/components/button";
 import { Input } from "@monsieurtis/ui/components/input";
 import { Label } from "@monsieurtis/ui/components/label";
