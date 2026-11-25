@@ -16,13 +16,13 @@ export const getMinutes = (date: Date): string =>
     date.getMinutes().toString().padStart(2, "0");
 
 export const getMinDate = (dates: (Date | undefined)[]): Date | null => {
-    const filteredDates = dates.filter((date) => date !== undefined) as Date[];
+    const filteredDates = dates.filter((date) => date !== undefined);
     if (filteredDates.length === 0) return null;
     return new Date(Math.min(...filteredDates.map((date) => date.getTime())));
 };
 
 export const getMaxDate = (dates: (Date | undefined)[]): Date | null => {
-    const filteredDates = dates.filter((date) => date !== undefined) as Date[];
+    const filteredDates = dates.filter((date) => date !== undefined);
     if (filteredDates.length === 0) return null;
     return new Date(Math.max(...filteredDates.map((date) => date.getTime())));
 };

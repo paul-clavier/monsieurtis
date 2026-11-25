@@ -1,11 +1,12 @@
 import { Prisma } from "@/infrastructure/prisma/generated/client";
 import { PrismaService } from "@/infrastructure/prisma/prisma.service";
+import { identity } from "@monsieurtis/core";
 import {
     Setup,
     SetupIngredient,
     SetupRelations,
-} from "@/interfaces/domain/setup.entity";
-import { identity } from "@monsieurtis/core";
+} from "@monsieurtis/linlin-interfaces/domain/setup.entity";
+import { Tag } from "@monsieurtis/linlin-interfaces/domain/tag.entity";
 import { PrismaCommonRepository } from "@monsieurtis/prisma";
 import { Injectable } from "@nestjs/common";
 
@@ -18,8 +19,18 @@ export type SetupWithIngredientsAndSubSetupsRow = Prisma.SetupGetPayload<{
     };
 }>;
 export type SetupIngredientRow = Prisma.SetupIngredientGetPayload<{
-    include: { ingredient: true };
+    include: { ingredient: true; tags: { include: { tag: true } } };
 }>;
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+type TagRow = Prisma.TagGetPayload<{}>;
+
+const mapSetupIngredient = ({
+    tags,
+    ...row
+}: SetupIngredientRow): SetupIngredient => ({
+    ...row,
+    tags: tags.map(({ tag }) => identity<Tag, TagRow>(tag)),
+});
 
 @Injectable()
 export class PrismaSetupRepository extends PrismaCommonRepository<
@@ -39,13 +50,23 @@ export class PrismaSetupRepository extends PrismaCommonRepository<
 
     protected readonly relations = {
         ingredients: {
-            include: { ingredients: { include: { ingredient: true } } },
-            map: (rows: SetupIngredientRow[]) =>
-                rows.map(identity<SetupIngredient, SetupIngredientRow>),
+            include: {
+                ingredients: {
+                    include: {
+                        ingredient: true,
+                        tags: { include: { tag: true } },
+                    },
+                },
+            },
+            map: (rows: SetupIngredientRow[]) => rows.map(mapSetupIngredient),
         },
         subSetups: {
             include: { subSetups: true },
             map: (rows: SetupRow[]) => rows.map(identity<Setup, SetupRow>),
+        },
+        tags: {
+            include: { tags: true },
+            map: (rows: TagRow[]) => rows.map(identity<Tag, TagRow>),
         },
     };
 }

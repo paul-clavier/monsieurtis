@@ -1,0 +1,7 @@
+# Lockfiles
+bun.lock
+uv.lock
+
+# Generated code
+**/routeTree.gen.ts
+**/src/infrastructure/prisma/generated/

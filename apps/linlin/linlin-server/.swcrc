@@ -13,8 +13,7 @@
         },
         "baseUrl": ".",
         "paths": {
-            "@/*": ["./src/*"],
-            "@/interfaces/*": ["../interfaces/*"]
+            "@/*": ["./src/*"]
         },
         "target": "es2022",
         "keepClassNames": true

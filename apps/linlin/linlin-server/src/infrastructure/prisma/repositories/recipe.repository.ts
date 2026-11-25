@@ -1,12 +1,15 @@
 import { Prisma } from "@/infrastructure/prisma/generated/client";
 import { PrismaService } from "@/infrastructure/prisma/prisma.service";
-import { Recipe, RecipeRelations } from "@/interfaces/domain/recipe.entity";
+import { identity } from "@monsieurtis/core";
+import {
+    Recipe,
+    RecipeRelations,
+} from "@monsieurtis/linlin-interfaces/domain/recipe.entity";
 import {
     Setup,
     WithIngredients,
     WithSubSetups,
-} from "@/interfaces/domain/setup.entity";
-import { identity } from "@monsieurtis/core";
+} from "@monsieurtis/linlin-interfaces/domain/setup.entity";
 import { PrismaCommonRepository } from "@monsieurtis/prisma";
 import { Injectable } from "@nestjs/common";
 import { SetupWithIngredientsAndSubSetupsRow } from "./setup.repository";

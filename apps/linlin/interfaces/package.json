@@ -1,15 +1,28 @@
 {
     "name": "@monsieurtis/linlin-interfaces",
+    "version": "0.0.0",
     "private": true,
     "type": "module",
+    "exports": {
+        "./domain/*": "./domain/*.ts",
+        "./dto/*": "./dto/*.ts"
+    },
     "scripts": {
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "lint": "eslint .",
+        "test": "vitest run --passWithNoTests",
+        "format": "prettier --write . --ignore-path ../../../.gitignore --ignore-path ../../../.prettierignore && eslint --fix .",
+        "check": "prettier --check . --ignore-path ../../../.gitignore --ignore-path ../../../.prettierignore"
     },
     "dependencies": {
         "@monsieurtis/core": "workspace:*",
         "zod": "catalog:zod"
     },
     "devDependencies": {
-        "@monsieurtis/tsconfig": "workspace:*"
+        "@monsieurtis/eslint-config": "workspace:*",
+        "@monsieurtis/tsconfig": "workspace:*",
+        "eslint": "catalog:tooling",
+        "prettier": "catalog:tooling",
+        "vitest": "catalog:build"
     }
 }

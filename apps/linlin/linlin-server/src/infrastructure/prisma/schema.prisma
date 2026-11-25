@@ -17,6 +17,7 @@ model Ingredient {
   name   String            @unique
   label  String
   setups SetupIngredient[]
+  tags   Tag[]
 }
 
 model Setup {
@@ -30,15 +31,17 @@ model Setup {
   parentSetups Setup[]           @relation("SetupSubSetups")
   ingredients  SetupIngredient[]
   recipes      Recipe[]
+  tags         Tag[]
 }
 
 model SetupIngredient {
-  setupId      String     @db.Uuid
-  setup        Setup      @relation(fields: [setupId], references: [id])
-  ingredientId String     @db.Uuid
-  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  setupId      String               @db.Uuid
+  setup        Setup                @relation(fields: [setupId], references: [id])
+  ingredientId String               @db.Uuid
+  ingredient   Ingredient           @relation(fields: [ingredientId], references: [id])
   quantity     Float
   unit         String
+  tags         SetupIngredientTag[]
 
   @@id([setupId, ingredientId])
 }
@@ -51,4 +54,32 @@ model Recipe {
   capacity    Int?
   time        Int
   setups      Setup[]
+}
+
+model TagCategory {
+  name String @id
+  tags Tag[]
+}
+
+model Tag {
+  name             String               @id
+  categoryName     String?
+  category         TagCategory?         @relation(fields: [categoryName], references: [name], onUpdate: Cascade, onDelete: SetNull)
+  ingredients      Ingredient[]
+  setups           Setup[]
+  setupIngredients SetupIngredientTag[]
+
+  @@index([categoryName])
+}
+
+// Explicit join table: SetupIngredient has a composite id, so Prisma's implicit m2m can't be used.
+model SetupIngredientTag {
+  setupId         String          @db.Uuid
+  ingredientId    String          @db.Uuid
+  setupIngredient SetupIngredient @relation(fields: [setupId, ingredientId], references: [setupId, ingredientId], onDelete: Cascade)
+  tagName         String
+  tag             Tag             @relation(fields: [tagName], references: [name], onUpdate: Cascade, onDelete: Cascade)
+
+  @@id([setupId, ingredientId, tagName])
+  @@index([tagName])
 }

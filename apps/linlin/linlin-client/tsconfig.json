@@ -7,14 +7,7 @@
         "noUnusedParameters": true,
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": true,
-        "types": ["vite/client"],
-        "baseUrl": ".",
-        "paths": {
-            "#/*": ["./src/*"],
-            "@/*": ["./src/*"],
-            "@/interfaces/*": ["../interfaces/*"],
-            "@monsieurtis/core": ["../../../lib/core/src/index.ts"]
-        }
+        "types": ["vite/client"]
     },
-    "include": ["**/*.ts", "**/*.tsx", "../interfaces"]
+    "include": ["**/*.ts", "**/*.tsx"]
 }

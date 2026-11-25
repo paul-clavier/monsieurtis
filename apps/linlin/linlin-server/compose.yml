@@ -8,7 +8,7 @@ services:
         ports:
             - "5432:5432"
         volumes:
-            - linlin-pgdata:/var/lib/postgresql/data
+            - linlin-pgdata:/var/lib/postgresql
         healthcheck:
             test: ["CMD-SHELL", "pg_isready -U postgres -d linlin"]
             interval: 5s

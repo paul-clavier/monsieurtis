@@ -1,0 +1,21 @@
+{
+    "name": "@monsieurtis/eslint-config",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        "./base": "./base.js",
+        "./react": "./react.js",
+        "./nest": "./nest.js"
+    },
+    "dependencies": {
+        "@eslint/js": "catalog:tooling",
+        "@tanstack/eslint-config": "catalog:tanstack",
+        "eslint-config-prettier": "catalog:tooling",
+        "globals": "catalog:tooling",
+        "typescript-eslint": "catalog:tooling"
+    },
+    "peerDependencies": {
+        "eslint": "catalog:tooling"
+    }
+}
