@@ -3,12 +3,10 @@ import { INGREDIENT_REPOSITORY } from "@/domain/injection-tokens";
 import { Module } from "@nestjs/common";
 import { PrismaService } from "./prisma.service";
 import { PrismaIngredientRepository } from "./repositories/ingredient.repository";
-import { PrismaRecipeRepository } from "./repositories/recipe.repository";
 import { PrismaSetupRepository } from "./repositories/setup.repository";
 
 const repositories = [
     PrismaIngredientRepository,
-    PrismaRecipeRepository,
     PrismaSetupRepository,
 ];
 

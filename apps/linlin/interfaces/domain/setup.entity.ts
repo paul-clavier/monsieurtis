@@ -8,7 +8,6 @@ export interface SetupIngredient {
     ingredient: Ingredient;
     quantity: number;
     unit: string;
-    tags?: Tag[];
 }
 export interface SetupRelations {
     ingredients: SetupIngredient[];
@@ -22,6 +21,7 @@ export interface Setup extends Entity, Partial<SetupRelations> {
     description: string;
     time: number;
     capacity: number | null;
+    dressing: string | null;
 }
 
 export type WithIngredients<T> = T & {

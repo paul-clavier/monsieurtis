@@ -19,18 +19,10 @@ export type SetupWithIngredientsAndSubSetupsRow = Prisma.SetupGetPayload<{
     };
 }>;
 export type SetupIngredientRow = Prisma.SetupIngredientGetPayload<{
-    include: { ingredient: true; tags: { include: { tag: true } } };
+    include: { ingredient: true };
 }>;
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type TagRow = Prisma.TagGetPayload<{}>;
-
-const mapSetupIngredient = ({
-    tags,
-    ...row
-}: SetupIngredientRow): SetupIngredient => ({
-    ...row,
-    tags: tags.map(({ tag }) => identity<Tag, TagRow>(tag)),
-});
 
 @Injectable()
 export class PrismaSetupRepository extends PrismaCommonRepository<
@@ -51,14 +43,10 @@ export class PrismaSetupRepository extends PrismaCommonRepository<
     protected readonly relations = {
         ingredients: {
             include: {
-                ingredients: {
-                    include: {
-                        ingredient: true,
-                        tags: { include: { tag: true } },
-                    },
-                },
+                ingredients: { include: { ingredient: true } },
             },
-            map: (rows: SetupIngredientRow[]) => rows.map(mapSetupIngredient),
+            map: (rows: SetupIngredientRow[]) =>
+                rows.map(identity<SetupIngredient, SetupIngredientRow>),
         },
         subSetups: {
             include: { subSetups: true },
