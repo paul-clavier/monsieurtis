@@ -19,6 +19,7 @@
         "check": "prettier --check . --ignore-path ../../../.gitignore --ignore-path ../../../.prettierignore"
     },
     "dependencies": {
+        "@aws-sdk/client-s3": "3.1168.0",
         "@monsieurtis/core": "workspace:*",
         "@monsieurtis/linlin-interfaces": "workspace:*",
         "@monsieurtis/nest-rest-crud": "workspace:*",
@@ -27,9 +28,9 @@
         "@nestjs/core": "catalog:nest",
         "@nestjs/platform-express": "catalog:nest",
         "@nestjs/swagger": "catalog:nest",
-        "nestjs-zod": "catalog:nest",
         "@prisma/client": "catalog:prisma",
         "@prisma/instrumentation": "catalog:prisma",
+        "nestjs-zod": "catalog:nest",
         "reflect-metadata": "catalog:nest",
         "rxjs": "catalog:nest",
         "zod": "catalog:zod"

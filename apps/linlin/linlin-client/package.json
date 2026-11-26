@@ -2,9 +2,6 @@
     "name": "linlin-client",
     "private": true,
     "type": "module",
-    "imports": {
-        "#/*": "./src/*"
-    },
     "scripts": {
         "dev": "vite dev --port 3000",
         "build": "vite build",
@@ -16,19 +13,22 @@
         "check": "prettier --check . --ignore-path ../../../.gitignore --ignore-path ../../../.prettierignore"
     },
     "dependencies": {
+        "@hookform/resolvers": "catalog:forms",
         "@monsieurtis/core": "workspace:*",
         "@monsieurtis/linlin-interfaces": "workspace:*",
         "@monsieurtis/ui": "workspace:*",
         "@tailwindcss/vite": "catalog:tailwind",
         "@tanstack/react-devtools": "catalog:tanstack",
+        "@tanstack/react-query": "catalog:tanstack",
+        "@tanstack/react-query-devtools": "catalog:tanstack",
         "@tanstack/react-router": "catalog:tanstack",
         "@tanstack/react-router-devtools": "catalog:tanstack",
-        "@tanstack/react-router-ssr-query": "catalog:tanstack",
-        "@tanstack/react-start": "catalog:tanstack",
         "@tanstack/router-plugin": "catalog:tanstack",
         "lucide-react": "catalog:react",
         "react": "catalog:react",
         "react-dom": "catalog:react",
+        "react-hook-form": "catalog:forms",
+        "sonner": "2.0.7",
         "tailwindcss": "catalog:tailwind",
         "zod": "catalog:zod"
     },

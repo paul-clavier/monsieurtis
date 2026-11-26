@@ -15,6 +15,44 @@ services:
             timeout: 5s
             retries: 10
 
+    s3:
+        image: chrislusf/seaweedfs:4.55
+        command:
+            - server
+            - -dir=/data
+            - -s3
+            - -s3.port=9000
+            - -s3.config=/etc/seaweedfs/s3.json
+        configs:
+            - source: s3-identities
+              target: /etc/seaweedfs/s3.json
+        ports:
+            - "9000:9000"
+        volumes:
+            - linlin-s3data:/data
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "wget -q -O /dev/null http://127.0.0.1:9000/healthz",
+                ]
+            interval: 5s
+            timeout: 5s
+            retries: 20
+
+    s3-init:
+        image: chrislusf/seaweedfs:4.55
+        depends_on:
+            s3:
+                condition: service_healthy
+        entrypoint:
+            - /bin/sh
+            - -c
+            - >-
+                echo "s3.bucket.list" | weed shell -master=s3:9333 | grep -q linlin-photos
+                || echo "s3.bucket.create -name linlin-photos" | weed shell -master=s3:9333
+        restart: "no"
+
     server:
         build:
             context: ../../..
@@ -23,9 +61,17 @@ services:
         depends_on:
             db:
                 condition: service_healthy
+            s3-init:
+                condition: service_completed_successfully
         environment:
             DATABASE_URL: postgresql://postgres:postgres@db:5432/linlin?schema=public
             PORT: "8000"
+            S3_ENDPOINT: http://s3:9000
+            S3_REGION: us-east-1
+            S3_BUCKET: linlin-photos
+            S3_ACCESS_KEY_ID: linlin
+            S3_SECRET_ACCESS_KEY: linlin-secret
+            S3_FORCE_PATH_STYLE: "true"
         ports:
             - "8000:8000"
         volumes:
@@ -38,5 +84,21 @@ services:
             - /app/lib/packages/prisma/node_modules
             - /app/apps/linlin/linlin-server/src/infrastructure/prisma/generated
 
+configs:
+    s3-identities:
+        content: |
+            {
+                "identities": [
+                    {
+                        "name": "linlin",
+                        "credentials": [
+                            { "accessKey": "linlin", "secretKey": "linlin-secret" }
+                        ],
+                        "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+                    }
+                ]
+            }
+
 volumes:
     linlin-pgdata:
+    linlin-s3data:

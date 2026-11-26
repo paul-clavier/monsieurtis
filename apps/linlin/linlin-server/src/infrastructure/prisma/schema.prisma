@@ -32,6 +32,7 @@ model Setup {
   parentSetups Setup[]           @relation("SetupSubSetups")
   ingredients  SetupIngredient[]
   tags         Tag[]
+  photos       SetupPhoto[]
 }
 
 model SetupIngredient {
@@ -43,6 +44,17 @@ model SetupIngredient {
   unit         String
 
   @@id([setupId, ingredientId])
+}
+
+model SetupPhoto {
+  id          String   @id @default(uuid()) @db.Uuid
+  setupId     String   @db.Uuid
+  setup       Setup    @relation(fields: [setupId], references: [id], onDelete: Cascade)
+  key         String   @unique
+  contentType String
+  createdAt   DateTime @default(now())
+
+  @@index([setupId])
 }
 
 model TagCategory {

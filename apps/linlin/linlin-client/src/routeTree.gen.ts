@@ -10,33 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SetupsNewRouteImport } from './routes/setups/new'
+import { Route as SetupsSetupIdRouteImport } from './routes/setups/$setupId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SetupsNewRoute = SetupsNewRouteImport.update({
+  id: '/setups/new',
+  path: '/setups/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetupsSetupIdRoute = SetupsSetupIdRouteImport.update({
+  id: '/setups/$setupId',
+  path: '/setups/$setupId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/setups/$setupId': typeof SetupsSetupIdRoute
+  '/setups/new': typeof SetupsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/setups/$setupId': typeof SetupsSetupIdRoute
+  '/setups/new': typeof SetupsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/setups/$setupId': typeof SetupsSetupIdRoute
+  '/setups/new': typeof SetupsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/setups/$setupId' | '/setups/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/setups/$setupId' | '/setups/new'
+  id: '__root__' | '/' | '/setups/$setupId' | '/setups/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SetupsSetupIdRoute: typeof SetupsSetupIdRoute
+  SetupsNewRoute: typeof SetupsNewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,21 +68,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/setups/new': {
+      id: '/setups/new'
+      path: '/setups/new'
+      fullPath: '/setups/new'
+      preLoaderRoute: typeof SetupsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setups/$setupId': {
+      id: '/setups/$setupId'
+      path: '/setups/$setupId'
+      fullPath: '/setups/$setupId'
+      preLoaderRoute: typeof SetupsSetupIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SetupsSetupIdRoute: SetupsSetupIdRoute,
+  SetupsNewRoute: SetupsNewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
