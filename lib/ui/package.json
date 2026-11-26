@@ -40,7 +40,7 @@
         "react-hook-form": "catalog:forms",
         "react-resizable-panels": "4.11.0",
         "recharts": "3.8.0",
-        "sonner": "2.0.7",
+        "sonner": "catalog:react",
         "tailwind-merge": "3.0.0",
         "vaul": "1.1.2",
         "zod": "catalog:zod"

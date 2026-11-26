@@ -28,7 +28,7 @@
         "react": "catalog:react",
         "react-dom": "catalog:react",
         "react-hook-form": "catalog:forms",
-        "sonner": "2.0.7",
+        "sonner": "catalog:react",
         "tailwindcss": "catalog:tailwind",
         "zod": "catalog:zod"
     },
