@@ -1,4 +1,4 @@
-import { CookbookLayout } from "@/layouts/cookbook-layout";
+import { SiteLayout } from "@/layouts/site-layout";
 import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext } from "@tanstack/react-router";
 
@@ -7,5 +7,5 @@ export interface RouterContext {
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
-    component: CookbookLayout,
+    component: SiteLayout,
 });

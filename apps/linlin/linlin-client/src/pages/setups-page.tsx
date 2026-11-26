@@ -1,4 +1,8 @@
-import { setupListQueryOptions, tagsQueryOptions } from "@/api/setups";
+import {
+    setupListQueryOptions,
+    tagsQueryOptions,
+    viewsQueryOptions,
+} from "@/api/setups";
 import { SetupCard } from "@/blocks/setup-card";
 import { SetupFilters } from "@/blocks/setup-filters";
 import { plural } from "@/utils/format";
@@ -21,37 +25,35 @@ export const SetupsPage = () => {
     const search = route.useSearch();
     const { data: setups } = useSuspenseQuery(setupListQueryOptions(search));
     const { data: tags } = useSuspenseQuery(tagsQueryOptions());
+    const { data: views } = useSuspenseQuery(viewsQueryOptions());
 
     return (
-        <div className="flex flex-col gap-8">
-            <SetupFilters tags={tags} />
-            <p className="cookbook-hand text-xl text-muted-foreground">
-                {plural(setups.length, "setup")} on these pages
-            </p>
+        <div className="flex flex-col gap-6">
+            <SetupFilters tags={tags} views={views} />
+            <p className="eyebrow">{plural(setups.length, "setup")}</p>
             {setups.length === 0 ? (
-                <Empty className="paper-card">
+                <Empty className="surface">
                     <EmptyHeader>
                         <EmptyMedia variant="icon">
                             <NotebookPenIcon />
                         </EmptyMedia>
-                        <EmptyTitle className="cookbook-heading text-2xl">
-                            Nothing on this page yet
+                        <EmptyTitle className="heading">
+                            Nothing matches
                         </EmptyTitle>
                         <EmptyDescription>
-                            Loosen the filters, or write a new setup in the
-                            book.
+                            Loosen the filters, or add a new setup.
                         </EmptyDescription>
                     </EmptyHeader>
                     <EmptyContent>
                         <Button asChild>
-                            <Link to="/setups/new">Write a setup</Link>
+                            <Link to="/setups/new">New setup</Link>
                         </Button>
                     </EmptyContent>
                 </Empty>
             ) : (
                 <div className="setup-grid">
-                    {setups.map((setup, index) => (
-                        <SetupCard key={setup.id} setup={setup} index={index} />
+                    {setups.map((setup) => (
+                        <SetupCard key={setup.id} setup={setup} />
                     ))}
                 </div>
             )}

@@ -1,9 +1,9 @@
 import { setupQueryOptions } from "@/api/setups";
 import { SetupMeta } from "@/blocks/components/setup-meta";
+import { TagGroups } from "@/blocks/components/tag-groups";
 import { PhotoGallery } from "@/blocks/photo-gallery";
 import { formatDuration } from "@/utils/format";
 import type { Setup } from "@monsieurtis/linlin-interfaces/domain/setup.entity";
-import { Badge } from "@monsieurtis/ui/components/badge";
 import { Button } from "@monsieurtis/ui/components/button";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi, Link } from "@tanstack/react-router";
@@ -47,12 +47,12 @@ export const SetupDetailPage = () => {
                     Back to the index
                 </Link>
             </Button>
-            <article className="paper-card recipe-sheet">
-                <header className="flex flex-col gap-4 text-center">
+            <article className="surface sheet">
+                <header className="flex flex-col items-center gap-4 text-center">
                     {isRoot && (
-                        <span className="stamp mx-auto">Root setup</span>
+                        <span className="root-tag mx-auto">Root setup</span>
                     )}
-                    <h1 className="cookbook-heading text-5xl">{setup.label}</h1>
+                    <h1 className="heading">{setup.label}</h1>
                     <p className="font-mono text-xs text-muted-foreground">
                         {setup.name}
                     </p>
@@ -62,24 +62,19 @@ export const SetupDetailPage = () => {
                         className="justify-center"
                     />
                     {setup.tags.length > 0 && (
-                        <div className="flex flex-wrap justify-center gap-1.5">
-                            {setup.tags.map((tag) => (
-                                <Badge key={tag.name} variant="outline" asChild>
-                                    <Link to="/" search={{ tags: [tag.name] }}>
-                                        {tag.name}
-                                    </Link>
-                                </Badge>
-                            ))}
-                        </div>
+                        <TagGroups
+                            tags={setup.tags}
+                            linked
+                            className="justify-center"
+                        />
                     )}
-                    <div className="cookbook-rule mx-auto w-full max-w-sm" />
                 </header>
 
                 <div className="mt-8 grid gap-10 md:grid-cols-[1fr_16rem]">
                     <div className="flex flex-col gap-8">
                         <section>
                             <h2 className="form-section-title">Method</h2>
-                            <p className="recipe-body">
+                            <p className="prose-body">
                                 {setup.description ||
                                     "No method written down yet."}
                             </p>
@@ -87,9 +82,7 @@ export const SetupDetailPage = () => {
                         {setup.dressing && (
                             <section>
                                 <h2 className="form-section-title">Dressing</h2>
-                                <p className="recipe-body cookbook-hand text-2xl">
-                                    {setup.dressing}
-                                </p>
+                                <p className="prose-body">{setup.dressing}</p>
                             </section>
                         )}
                         <PhotoGallery

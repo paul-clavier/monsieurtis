@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Fira+Mono:wght@400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Fira+Mono:wght@400;500;700&family=Eagle+Lake&family=Cutive+Mono&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -74,6 +74,10 @@
 }
 
 @theme inline {
+    --font-title: "Eagle Lake", "Noto Serif", ui-serif, Georgia, serif;
+    --font-ui:
+        "Cutive Mono", Menlo, ui-monospace, SFMono-Regular, Monaco, Consolas,
+        monospace;
     --font-sans:
         "Fira Mono", "Noto Serif", ui-serif, Georgia, Cambria,
         "Times New Roman", Times, serif;
@@ -123,5 +127,26 @@
     }
     body {
         @apply bg-background text-foreground;
+        font-synthesis: none;
+    }
+    .app-title {
+        font-family: var(--font-title);
+        font-weight: 400;
+        -webkit-text-stroke: 0.04em currentcolor;
+        paint-order: stroke fill;
+    }
+    [data-slot="button"],
+    [data-slot="toggle"],
+    [data-slot="toggle-group-item"],
+    [data-slot="tabs-trigger"],
+    [data-slot="badge"],
+    [data-slot="navigation-menu-trigger"],
+    [data-slot="navigation-menu-link"],
+    [data-slot="dropdown-menu-item"],
+    [data-slot="menubar-trigger"],
+    [data-slot="sidebar-menu-button"],
+    [data-slot="form-label"],
+    [data-slot="label"] {
+        font-family: var(--font-ui);
     }
 }

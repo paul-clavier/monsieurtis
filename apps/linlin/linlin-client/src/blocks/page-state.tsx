@@ -26,12 +26,12 @@ export const PageError = ({ error, reset }: ErrorComponentProps) => {
     const notFound = error instanceof ApiError && error.status === 404;
 
     return (
-        <Empty className="paper-card mx-auto mt-10 max-w-lg">
+        <Empty className="surface mx-auto mt-10 max-w-lg">
             <EmptyHeader>
                 <EmptyMedia variant="icon">
                     <CookingPotIcon />
                 </EmptyMedia>
-                <EmptyTitle className="cookbook-heading text-2xl">
+                <EmptyTitle className="heading">
                     {notFound
                         ? "This page fell out of the book"
                         : "Something burnt"}
@@ -60,7 +60,7 @@ export const PageError = ({ error, reset }: ErrorComponentProps) => {
 export const SetupsPagePending = () => (
     <div className="setup-grid">
         {Array.from({ length: 6 }, (_, index) => (
-            <div key={index} className="paper-card flex flex-col gap-4 p-4">
+            <div key={index} className="surface flex flex-col gap-4 p-4">
                 <Skeleton className="aspect-[4/3] w-full" />
                 <Skeleton className="h-6 w-2/3" />
                 <Skeleton className="h-4 w-full" />

@@ -32,15 +32,10 @@ export const NewSetupPage = () => {
         });
 
     return (
-        <article className="paper-card recipe-sheet mx-auto max-w-3xl">
+        <article className="surface sheet mx-auto max-w-3xl">
             <header className="mb-8 text-center">
-                <p className="cookbook-hand text-2xl text-primary">
-                    a new page
-                </p>
-                <h1 className="cookbook-heading text-4xl">
-                    Write down a setup
-                </h1>
-                <div className="cookbook-rule mx-auto mt-4 max-w-xs" />
+                <p className="eyebrow">New</p>
+                <h1 className="heading">Add a setup</h1>
             </header>
             <SetupForm
                 setups={setups}

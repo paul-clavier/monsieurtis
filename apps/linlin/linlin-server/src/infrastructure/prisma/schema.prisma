@@ -71,3 +71,13 @@ model Tag {
 
   @@index([categoryName])
 }
+
+model SetupView {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  query     String?
+  tagNames  String[]
+  match     String   @default("any")
+  scope     String   @default("all")
+  createdAt DateTime @default(now())
+}

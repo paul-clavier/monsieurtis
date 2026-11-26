@@ -2,7 +2,7 @@ import { Button } from "@monsieurtis/ui/components/button";
 import { ImagePlusIcon, XIcon } from "lucide-react";
 import type { DragEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Polaroid } from "./polaroid";
+import { PhotoFrame } from "./photo-frame";
 
 export const ACCEPTED_PHOTOS =
     "image/jpeg,image/png,image/webp,image/gif,image/avif";
@@ -52,7 +52,7 @@ export const PhotoPicker = ({ value, onChange }: PhotoPickerProps) => {
                 onDrop={onDrop}
             >
                 <ImagePlusIcon className="size-7" />
-                <span className="cookbook-hand text-xl">
+                <span className="eyebrow">
                     Drop photos here, or click to pick some
                 </span>
                 <span className="text-xs text-muted-foreground">
@@ -72,19 +72,18 @@ export const PhotoPicker = ({ value, onChange }: PhotoPickerProps) => {
             />
             {previews.length > 0 && (
                 <div className="photo-strip">
-                    {previews.map(({ file, url }, index) => (
-                        <Polaroid
+                    {previews.map(({ file, url }) => (
+                        <PhotoFrame
                             key={url}
                             src={url}
                             alt={file.name}
-                            tilt={index % 2 ? "right" : "left"}
                             caption={file.name}
                         >
                             <Button
                                 type="button"
                                 size="icon-xs"
                                 variant="secondary"
-                                className="polaroid-action"
+                                className="photo-action"
                                 onClick={() =>
                                     onChange(value.filter((f) => f !== file))
                                 }
@@ -92,7 +91,7 @@ export const PhotoPicker = ({ value, onChange }: PhotoPickerProps) => {
                             >
                                 <XIcon />
                             </Button>
-                        </Polaroid>
+                        </PhotoFrame>
                     ))}
                 </div>
             )}

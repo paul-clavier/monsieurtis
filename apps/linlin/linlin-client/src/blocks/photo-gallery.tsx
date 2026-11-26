@@ -8,8 +8,8 @@ import { Button } from "@monsieurtis/ui/components/button";
 import { ImagePlusIcon, Loader2Icon, Trash2Icon } from "lucide-react";
 import { useRef } from "react";
 import { toast } from "sonner";
+import { PhotoFrame } from "./components/photo-frame";
 import { ACCEPTED_PHOTOS } from "./components/photo-picker";
-import { Polaroid } from "./components/polaroid";
 
 interface PhotoGalleryProps {
     setupId: string;
@@ -62,22 +62,19 @@ export const PhotoGallery = ({ setupId, label, photos }: PhotoGalleryProps) => {
                 />
             </div>
             {photos.length === 0 ? (
-                <p className="cookbook-hand text-xl text-muted-foreground">
-                    No snapshot yet: cook it and take one!
-                </p>
+                <p className="eyebrow">No photo yet.</p>
             ) : (
                 <div className="photo-strip">
                     {photos.map((photo, index) => (
-                        <Polaroid
+                        <PhotoFrame
                             key={photo.id}
                             src={photoUrl(photo)}
                             alt={`${label}, photo ${index + 1}`}
-                            tilt={index % 2 ? "right" : "left"}
                         >
                             <Button
                                 size="icon-xs"
                                 variant="secondary"
-                                className="polaroid-action"
+                                className="photo-action"
                                 disabled={
                                     remove.isPending &&
                                     remove.variables === photo.id
@@ -92,7 +89,7 @@ export const PhotoGallery = ({ setupId, label, photos }: PhotoGalleryProps) => {
                             >
                                 <Trash2Icon />
                             </Button>
-                        </Polaroid>
+                        </PhotoFrame>
                     ))}
                 </div>
             )}

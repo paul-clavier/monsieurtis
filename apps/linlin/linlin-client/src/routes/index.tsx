@@ -1,4 +1,8 @@
-import { setupListQueryOptions, tagsQueryOptions } from "@/api/setups";
+import {
+    setupListQueryOptions,
+    tagsQueryOptions,
+    viewsQueryOptions,
+} from "@/api/setups";
 import { SetupsPagePending } from "@/blocks/page-state";
 import { SetupsPage } from "@/pages/setups-page";
 import { createFileRoute } from "@tanstack/react-router";
@@ -18,6 +22,7 @@ export const Route = createFileRoute("/")({
         Promise.all([
             queryClient.ensureQueryData(setupListQueryOptions(deps)),
             queryClient.ensureQueryData(tagsQueryOptions()),
+            queryClient.ensureQueryData(viewsQueryOptions()),
         ]),
     pendingComponent: SetupsPagePending,
     component: SetupsPage,

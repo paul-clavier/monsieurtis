@@ -1,7 +1,7 @@
+import { groupTagsByCategory } from "@/utils/tags";
 import type { Tag } from "@monsieurtis/linlin-interfaces/domain/tag.entity";
 import { TagName } from "@monsieurtis/linlin-interfaces/dto/setup.dto";
 import { Badge } from "@monsieurtis/ui/components/badge";
-import { Button } from "@monsieurtis/ui/components/button";
 import { Input } from "@monsieurtis/ui/components/input";
 import { PlusIcon, XIcon } from "lucide-react";
 import type { KeyboardEvent } from "react";
@@ -80,22 +80,27 @@ export const TagInput = ({
                 />
             </div>
             {unused.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="cookbook-hand text-lg text-muted-foreground">
-                        from the index:
-                    </span>
-                    {unused.map((tag) => (
-                        <Button
-                            key={tag.name}
-                            type="button"
-                            size="xs"
-                            variant="ghost"
-                            className="tag-suggestion"
-                            onClick={() => add(tag.name)}
-                        >
-                            <PlusIcon />
-                            {tag.name}
-                        </Button>
+                <div className="flex flex-col gap-3">
+                    {groupTagsByCategory(unused).map((group) => (
+                        <div key={group.category} className="tag-group">
+                            <span className="tag-group-label">
+                                {group.category}
+                            </span>
+                            <ul className="tag-group-list">
+                                {group.tags.map((tag) => (
+                                    <li key={tag.name}>
+                                        <button
+                                            type="button"
+                                            className="tag-suggestion"
+                                            onClick={() => add(tag.name)}
+                                        >
+                                            <PlusIcon />
+                                            {tag.name}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
                     ))}
                 </div>
             )}

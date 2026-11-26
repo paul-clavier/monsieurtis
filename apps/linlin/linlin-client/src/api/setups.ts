@@ -1,15 +1,20 @@
 import type { SetupPhoto } from "@monsieurtis/linlin-interfaces/domain/setup-photo.entity";
 import type {
+    SetupScope,
+    SetupView,
+    TagMatch,
+} from "@monsieurtis/linlin-interfaces/domain/setup-view.entity";
+import type {
     Setup,
     SetupRelations,
 } from "@monsieurtis/linlin-interfaces/domain/setup.entity";
 import type { Tag } from "@monsieurtis/linlin-interfaces/domain/tag.entity";
+import type { SetupViewCreateDTO } from "@monsieurtis/linlin-interfaces/dto/setup-view.dto";
 import type { SetupCreateDTO } from "@monsieurtis/linlin-interfaces/dto/setup.dto";
 import { queryOptions } from "@tanstack/react-query";
 import { request, toQueryString } from "./http";
 
-export type TagMatch = "any" | "all";
-export type SetupScope = "all" | "root" | "nested";
+export type { SetupScope, TagMatch };
 
 export interface SetupListParams {
     q?: string;
@@ -88,6 +93,23 @@ export const tagsQueryOptions = () =>
         queryFn: () => request<Tag[]>("/tags"),
         staleTime: 5 * 60_000,
     });
+
+export const viewKeys = { all: ["setup-views"] as const };
+
+export const viewsQueryOptions = () =>
+    queryOptions({
+        queryKey: viewKeys.all,
+        queryFn: () =>
+            request<SetupView[]>(
+                `/setup-views${toQueryString({ sort: "name:ASC" })}`,
+            ),
+    });
+
+export const createView = (data: SetupViewCreateDTO) =>
+    request<{ id: string }>("/setup-views", { method: "POST", json: data });
+
+export const deleteView = (id: string) =>
+    request<{ id: string }>(`/setup-views/${id}`, { method: "DELETE" });
 
 export const createSetup = (data: SetupCreateDTO) =>
     request<{ id: string }>("/setups", { method: "POST", json: data });

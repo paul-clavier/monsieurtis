@@ -71,7 +71,7 @@ export const SetupForm = ({
     return (
         <Form {...form}>
             <form
-                className="recipe-form"
+                className="setup-form"
                 onSubmit={form.handleSubmit((setup) =>
                     onSubmit({ setup, photos }),
                 )}
