@@ -12,6 +12,22 @@ export const TagName = z
     .max(40)
     .regex(/^[^,]+$/, "Tags cannot contain commas");
 
+export interface SetupCreateDTO {
+    name: string;
+    label: string;
+    description: string;
+    time: number;
+    capacity: number | null;
+    dressing: string | null;
+    tagNames: string[];
+    subSetupIds: string[];
+    newSubSetups: SetupCreateDTO[];
+}
+
+export interface SetupCreateInput extends Omit<SetupCreateDTO, "newSubSetups"> {
+    newSubSetups?: SetupCreateInput[];
+}
+
 export const SetupCreate = z.object({
     name: z
         .string()
@@ -28,11 +44,17 @@ export const SetupCreate = z.object({
     dressing: z.string().trim().nullable(),
     tagNames: z.array(TagName),
     subSetupIds: z.array(z.uuid()),
+    get newSubSetups(): z.ZodDefault<
+        z.ZodArray<z.ZodType<SetupCreateDTO, SetupCreateInput>>
+    > {
+        return z.array(SetupCreate).default([]);
+    },
 });
 
 export const SetupUpdate = SetupCreate.omit({
     tagNames: true,
     subSetupIds: true,
+    newSubSetups: true,
 }).partial();
 
 export const SetupFilters = z.object({
@@ -45,7 +67,5 @@ export const SetupFilters = z.object({
         .optional(),
 });
 
-export type SetupCreateInput = z.input<typeof SetupCreate>;
-export type SetupCreateDTO = z.infer<typeof SetupCreate>;
 export type SetupUpdateDTO = z.infer<typeof SetupUpdate>;
 export type SetupFiltersParams = z.input<typeof SetupFilters>;

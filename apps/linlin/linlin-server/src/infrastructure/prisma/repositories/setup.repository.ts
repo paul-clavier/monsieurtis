@@ -68,8 +68,22 @@ export class PrismaSetupRepository extends PrismaCommonRepository<
             map: (rows: SetupRow[]) => rows.map(mapSetup),
         },
         parentSetups: {
-            include: { parentSetups: { orderBy: { label: "asc" as const } } },
-            map: (rows: SetupRow[]) => rows.map(mapSetup),
+            include: {
+                parentSetups: {
+                    orderBy: { label: "asc" as const },
+                    include: {
+                        photos: {
+                            orderBy: { createdAt: "asc" as const },
+                            take: 1,
+                        },
+                    },
+                },
+            },
+            map: (rows: (SetupRow & { photos: SetupPhotoRow[] })[]) =>
+                rows.map((row) => ({
+                    ...mapSetup(row),
+                    photos: row.photos.map(mapSetupPhoto),
+                })),
         },
         tags: {
             include: { tags: { orderBy: { name: "asc" as const } } },
@@ -124,6 +138,7 @@ export class PrismaSetupRepository extends PrismaCommonRepository<
     private toCreateInput({
         tagNames,
         subSetupIds,
+        newSubSetups,
         ...scalars
     }: SetupCreate): Prisma.SetupCreateInput {
         return {
@@ -136,6 +151,7 @@ export class PrismaSetupRepository extends PrismaCommonRepository<
             },
             subSetups: {
                 connect: [...new Set(subSetupIds)].map((id) => ({ id })),
+                create: newSubSetups.map((child) => this.toCreateInput(child)),
             },
         };
     }

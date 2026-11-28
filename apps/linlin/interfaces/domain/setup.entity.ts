@@ -23,10 +23,12 @@ export type SetupIngredientWithIngredient = SetupIngredient & {
     ingredient: Ingredient;
 };
 
+export type SetupWithPhotos = Setup & { photos: SetupPhoto[] };
+
 export interface SetupRelations {
     ingredients: SetupIngredientWithIngredient[];
     subSetups: Setup[];
-    parentSetups: Setup[];
+    parentSetups: SetupWithPhotos[];
     tags: Tag[];
     photos: SetupPhoto[];
 }
@@ -42,6 +44,7 @@ export interface SetupFilters {
 export type SetupCreate = Mutable<Setup> & {
     tagNames: string[];
     subSetupIds: string[];
+    newSubSetups: SetupCreate[];
 };
 
 export type SetupUpdate = Partial<Mutable<Setup>>;

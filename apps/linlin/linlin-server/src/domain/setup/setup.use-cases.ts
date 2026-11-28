@@ -12,6 +12,9 @@ import { Inject, Injectable } from "@nestjs/common";
 import { SetupAlreadyExistsError, SetupNotFoundError } from "./setup.error";
 import type { SetupRepository } from "./setup.repository";
 
+const flattenSetups = (data: SetupCreate[]): SetupCreate[] =>
+    data.flatMap((setup) => [setup, ...flattenSetups(setup.newSubSetups)]);
+
 @Injectable()
 export class SetupUseCases extends CommonUseCases<
     Setup,
@@ -56,9 +59,10 @@ export class SetupUseCases extends CommonUseCases<
     }
 
     private async assertCreatable(data: SetupCreate[]): Promise<void> {
-        await this.assertNamesAvailable(data.map((setup) => setup.name));
+        const tree = flattenSetups(data);
+        await this.assertNamesAvailable(tree.map((setup) => setup.name));
         await this.assertSetupsExist(
-            data.flatMap((setup) => setup.subSetupIds),
+            tree.flatMap((setup) => setup.subSetupIds),
         );
     }
 

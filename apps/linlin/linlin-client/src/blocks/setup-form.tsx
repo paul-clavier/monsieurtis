@@ -22,6 +22,7 @@ import { Textarea } from "@monsieurtis/ui/components/textarea";
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { NewSubSetups } from "./components/new-sub-setups";
 import { PhotoPicker } from "./components/photo-picker";
 import { SubSetupPicker } from "./components/sub-setup-picker";
 import { TagInput } from "./components/tag-input";
@@ -48,6 +49,7 @@ const DEFAULT_VALUES: SetupCreateInput = {
     dressing: null,
     tagNames: [],
     subSetupIds: [],
+    newSubSetups: [],
 };
 
 const toNullableNumber = (value: string) =>
@@ -278,12 +280,16 @@ export const SetupForm = ({
                                     />
                                 </FormControl>
                                 <FormDescription>
-                                    Child setups this one is built from.
+                                    Existing setups this one is built from.
                                 </FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
+                    <div className="flex flex-col gap-3">
+                        <span className="eyebrow">Or create new ones here</span>
+                        <NewSubSetups tags={tags} />
+                    </div>
                 </section>
 
                 <section className="form-section">

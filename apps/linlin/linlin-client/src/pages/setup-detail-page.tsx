@@ -1,5 +1,6 @@
 import { setupQueryOptions } from "@/api/setups";
 import { SetupMeta } from "@/blocks/components/setup-meta";
+import { SetupPreview } from "@/blocks/components/setup-preview";
 import { TagGroups } from "@/blocks/components/tag-groups";
 import { PhotoGallery } from "@/blocks/photo-gallery";
 import { formatDuration } from "@/utils/format";
@@ -114,12 +115,18 @@ export const SetupDetailPage = () => {
                             title="Made with"
                             setups={setup.subSetups}
                         />
-                        <SetupLinks
-                            title="Used in"
-                            setups={setup.parentSetups}
-                        />
                     </aside>
                 </div>
+                {setup.parentSetups.length > 0 && (
+                    <section className="mt-10">
+                        <h2 className="form-section-title">Used in</h2>
+                        <div className="setup-previews">
+                            {setup.parentSetups.map((parent) => (
+                                <SetupPreview key={parent.id} setup={parent} />
+                            ))}
+                        </div>
+                    </section>
+                )}
             </article>
         </div>
     );
