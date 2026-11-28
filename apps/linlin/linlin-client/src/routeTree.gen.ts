@@ -8,61 +8,88 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as IndexRouteImport } from "./routes/index";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as SetupsNewRouteImport } from './routes/setups/new'
+import { Route as SetupsSetupIdRouteImport } from './routes/setups/$setupId'
 
 const IndexRoute = IndexRouteImport.update({
-    id: "/",
-    path: "/",
-    getParentRoute: () => rootRouteImport,
-} as any);
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetupsNewRoute = SetupsNewRouteImport.update({
+  id: '/setups/new',
+  path: '/setups/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetupsSetupIdRoute = SetupsSetupIdRouteImport.update({
+  id: '/setups/$setupId',
+  path: '/setups/$setupId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
-    "/": typeof IndexRoute;
+  '/': typeof IndexRoute
+  '/setups/$setupId': typeof SetupsSetupIdRoute
+  '/setups/new': typeof SetupsNewRoute
 }
 export interface FileRoutesByTo {
-    "/": typeof IndexRoute;
+  '/': typeof IndexRoute
+  '/setups/$setupId': typeof SetupsSetupIdRoute
+  '/setups/new': typeof SetupsNewRoute
 }
 export interface FileRoutesById {
-    __root__: typeof rootRouteImport;
-    "/": typeof IndexRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/setups/$setupId': typeof SetupsSetupIdRoute
+  '/setups/new': typeof SetupsNewRoute
 }
 export interface FileRouteTypes {
-    fileRoutesByFullPath: FileRoutesByFullPath;
-    fullPaths: "/";
-    fileRoutesByTo: FileRoutesByTo;
-    to: "/";
-    id: "__root__" | "/";
-    fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/setups/$setupId' | '/setups/new'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/setups/$setupId' | '/setups/new'
+  id: '__root__' | '/' | '/setups/$setupId' | '/setups/new'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-    IndexRoute: typeof IndexRoute;
+  IndexRoute: typeof IndexRoute
+  SetupsSetupIdRoute: typeof SetupsSetupIdRoute
+  SetupsNewRoute: typeof SetupsNewRoute
 }
 
-declare module "@tanstack/react-router" {
-    interface FileRoutesByPath {
-        "/": {
-            id: "/";
-            path: "/";
-            fullPath: "/";
-            preLoaderRoute: typeof IndexRouteImport;
-            parentRoute: typeof rootRouteImport;
-        };
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
+    '/setups/new': {
+      id: '/setups/new'
+      path: '/setups/new'
+      fullPath: '/setups/new'
+      preLoaderRoute: typeof SetupsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setups/$setupId': {
+      id: '/setups/$setupId'
+      path: '/setups/$setupId'
+      fullPath: '/setups/$setupId'
+      preLoaderRoute: typeof SetupsSetupIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+  }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-    IndexRoute: IndexRoute,
-};
-export const routeTree = rootRouteImport
-    ._addFileChildren(rootRouteChildren)
-    ._addFileTypes<FileRouteTypes>();
-
-import type { createStart } from "@tanstack/react-start";
-import type { getRouter } from "./router.tsx";
-declare module "@tanstack/react-start" {
-    interface Register {
-        ssr: true;
-        router: Awaited<ReturnType<typeof getRouter>>;
-    }
+  IndexRoute: IndexRoute,
+  SetupsSetupIdRoute: SetupsSetupIdRoute,
+  SetupsNewRoute: SetupsNewRoute,
 }
+export const routeTree = rootRouteImport
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()

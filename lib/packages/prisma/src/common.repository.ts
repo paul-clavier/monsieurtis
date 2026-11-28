@@ -65,9 +65,10 @@ export abstract class PrismaCommonRepository<
         keys: ReadonlyArray<keyof TRelations>,
     ): object | undefined {
         if (keys.length === 0) return undefined;
-        return Object.fromEntries(
-            keys.map((k) => [k, this.relations[k].include]),
-        );
+        return Object.assign(
+            {},
+            ...keys.map((k) => this.relations[k].include),
+        ) as object;
     }
 
     private buildWhere(filterList?: Partial<TFilters>[]): TWhere | undefined {

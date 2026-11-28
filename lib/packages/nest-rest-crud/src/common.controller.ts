@@ -102,9 +102,8 @@ export const CommonControllerMixin = <
     abstract class BaseController {
         abstract readonly useCases: CommonUseCases<
             E,
-            R,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             any,
+            R,
             CreateInput,
             UpdateInput
         >;

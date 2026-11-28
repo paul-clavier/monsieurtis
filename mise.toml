@@ -1,0 +1,23 @@
+# Dev toolchain for the monorepo. `mise install` at the repo root sets it all up.
+# bun's version comes from `packageManager` (package.json): `tis repo sync`
+# rewrites the pin below from it (CI fails if it drifts).
+# keep opentofu/tflint in sync with .github/workflows/tofu-*.yml.
+
+[tools]
+# Apps
+bun = "1.4.5"
+node = "24.22.3"
+
+# Infra
+opentofu = "1.13.10"
+tflint = "0.66.0"
+trivy = "0.76.2"
+kubectl = "1.37.2"
+helm = "4.3.2"
+"aqua:civo/cli" = "1.6.1"
+1password-cli = "2.42.0"
+jq = "1.8.2"
+
+[env]
+# Puts the `tis` CLI on PATH while inside the repo.
+_.path = ["{{config_root}}/cli/bin"]

@@ -1,30 +1,50 @@
-import { Entity } from "@monsieurtis/core";
+import { Entity, Mutable } from "@monsieurtis/core";
 import { Ingredient } from "./ingredient.entity";
+import { SetupPhoto } from "./setup-photo.entity";
+import { Tag } from "./tag.entity";
 
-export interface SetupIngredient {
-    setupId: string;
-    ingredientId: string;
-    ingredient: Ingredient;
-    quantity: number;
-    unit: string;
-}
-export interface SetupRelations {
-    ingredients: SetupIngredient[];
-    subSetups: Setup[];
-}
-
-export interface Setup extends Entity, Partial<SetupRelations> {
+export interface Setup extends Entity {
     name: string;
     label: string;
     description: string;
     time: number;
     capacity: number | null;
+    dressing: string | null;
 }
 
-export type WithIngredients<T> = T & {
-    ingredients: SetupIngredient[];
+export interface SetupIngredient {
+    setupId: string;
+    ingredientId: string;
+    quantity: number;
+    unit: string;
+}
+
+export type SetupIngredientWithIngredient = SetupIngredient & {
+    ingredient: Ingredient;
 };
 
-export type WithSubSetups<T> = T & {
+export type SetupWithPhotos = Setup & { photos: SetupPhoto[] };
+
+export interface SetupRelations {
+    ingredients: SetupIngredientWithIngredient[];
     subSetups: Setup[];
+    parentSetups: SetupWithPhotos[];
+    tags: Tag[];
+    photos: SetupPhoto[];
+}
+
+export interface SetupFilters {
+    name: string;
+    search: string;
+    tagsAll: string[];
+    tagsAny: string[];
+    root: boolean;
+}
+
+export type SetupCreate = Mutable<Setup> & {
+    tagNames: string[];
+    subSetupIds: string[];
+    newSubSetups: SetupCreate[];
 };
+
+export type SetupUpdate = Partial<Mutable<Setup>>;

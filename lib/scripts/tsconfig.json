@@ -1,7 +1,0 @@
-{
-    "extends": "@monsieurtis/tsconfig/base.json",
-    "compilerOptions": {
-        "noEmit": true
-    },
-    "include": ["."]
-}

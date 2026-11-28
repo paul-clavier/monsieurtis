@@ -1,6 +1,6 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import { AppId } from "@monsieurtis/ory";
+import type { AppId } from "@monsieurtis/ory";
 
 export interface RequireAppAccessProps {
     appId: AppId;

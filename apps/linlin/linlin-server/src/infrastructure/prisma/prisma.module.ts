@@ -1,21 +1,47 @@
 import { DATABASE_URL } from "@/app.constants";
-import { INGREDIENT_REPOSITORY } from "@/domain/injection-tokens";
+import {
+    INGREDIENT_REPOSITORY,
+    SETUP_PHOTO_REPOSITORY,
+    SETUP_REPOSITORY,
+    SETUP_VIEW_REPOSITORY,
+    TAG_REPOSITORY,
+} from "@/domain/injection-tokens";
 import { Module } from "@nestjs/common";
 import { PrismaService } from "./prisma.service";
 import { PrismaIngredientRepository } from "./repositories/ingredient.repository";
-import { PrismaRecipeRepository } from "./repositories/recipe.repository";
+import { PrismaSetupPhotoRepository } from "./repositories/setup-photo.repository";
+import { PrismaSetupViewRepository } from "./repositories/setup-view.repository";
 import { PrismaSetupRepository } from "./repositories/setup.repository";
+import { PrismaTagRepository } from "./repositories/tag.repository";
 
 const repositories = [
     PrismaIngredientRepository,
-    PrismaRecipeRepository,
     PrismaSetupRepository,
+    PrismaSetupPhotoRepository,
+    PrismaSetupViewRepository,
+    PrismaTagRepository,
 ];
 
 const tokenProviders = [
     {
         provide: INGREDIENT_REPOSITORY,
         useExisting: PrismaIngredientRepository,
+    },
+    {
+        provide: SETUP_REPOSITORY,
+        useExisting: PrismaSetupRepository,
+    },
+    {
+        provide: SETUP_PHOTO_REPOSITORY,
+        useExisting: PrismaSetupPhotoRepository,
+    },
+    {
+        provide: SETUP_VIEW_REPOSITORY,
+        useExisting: PrismaSetupViewRepository,
+    },
+    {
+        provide: TAG_REPOSITORY,
+        useExisting: PrismaTagRepository,
     },
 ];
 

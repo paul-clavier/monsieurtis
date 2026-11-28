@@ -4,7 +4,11 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "lint": "eslint .",
+        "test": "vitest run --passWithNoTests",
+        "format": "prettier --write . --ignore-path ../../../.gitignore --ignore-path ../../../.prettierignore && eslint --fix .",
+        "check": "prettier --check . --ignore-path ../../../.gitignore --ignore-path ../../../.prettierignore"
     },
     "exports": {
         ".": "./src/index.ts"
@@ -19,11 +23,15 @@
         "zod": "catalog:zod"
     },
     "devDependencies": {
+        "@monsieurtis/eslint-config": "workspace:*",
         "@monsieurtis/tsconfig": "workspace:*",
         "@nestjs/common": "catalog:nest",
         "@nestjs/swagger": "catalog:nest",
+        "eslint": "catalog:tooling",
         "nestjs-zod": "catalog:nest",
+        "prettier": "catalog:tooling",
         "reflect-metadata": "catalog:nest",
+        "vitest": "catalog:build",
         "zod": "catalog:zod"
     }
 }

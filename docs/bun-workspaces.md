@@ -29,7 +29,7 @@ Workspaces are a single entry in the root `package.json`:
 {
     "name": "monorepo-root",
     "private": true,
-    "packageManager": "bun@1.3.13",
+    "packageManager": "bun@1.4.5",
     "workspaces": [
         "apps/*/*",
         "lib/core",
@@ -53,6 +53,8 @@ The `workspace:*` protocol is the magic word. It tells Bun "this dependency live
 `apps/*/*` matches `apps/linlin/linlin-server` and `apps/linlin/linlin-client` but **not** `apps/linlin` itself. This is deliberate: an `apps/<name>` folder is a logical grouping (server + client + shared interfaces), not a package. Listing `apps/*` would make Bun look for a `package.json` at `apps/linlin` and treat it as a workspace package if found, which causes confusion.
 
 Pick a depth and stick to it. For a server-only app you'd add `apps/<name>` directly; for the server+client layout, `apps/*/*` is cleaner.
+
+This repo lists its packages explicitly instead (see the root `package.json`): `apps/` mixes depths and holds non-JS apps (e.g. a Python one), so a glob would either miss packages or pick up folders that aren't Bun workspaces.
 
 ---
 
@@ -273,7 +275,6 @@ Each app or lib then needs four lines:
     "extends": "@monsieurtis/tsconfig/server.json",
     "compilerOptions": {
         "outDir": "./dist",
-        "baseUrl": ".",
         "paths": { "@/*": ["src/*"] },
     },
     "include": ["src"],
@@ -311,7 +312,7 @@ A common mistake: putting `"paths": { "@monsieurtis/core/*": ["../../lib/core/sr
 
 The correct mechanism for cross-package imports is `exports` in the shared lib's `package.json` (§4). It works for both TypeScript _and_ runtime/bundlers because it's the standard Node mechanism.
 
-Reserve `paths` for **intra-package** aliases only, like `@/*` mapping to `src/*` inside one app.
+Reserve `paths` for **intra-package** aliases only, like `@/*` mapping to `src/*` inside one app. `baseUrl` isn't needed for that (and is deprecated in TypeScript 6): `paths` entries resolve relative to the tsconfig. In client apps, prefer package.json `imports` (`"#/*": "./src/*"`), which bundlers and TypeScript both honor without any tsconfig alias.
 
 ---
 
@@ -325,7 +326,6 @@ Apps build themselves; they don't depend on libs being pre-built.
     "extends": "@monsieurtis/tsconfig/server.json",
     "compilerOptions": {
         "outDir": "./dist",
-        "baseUrl": ".",
         "paths": { "@/*": ["src/*"] },
     },
     "include": ["src"],

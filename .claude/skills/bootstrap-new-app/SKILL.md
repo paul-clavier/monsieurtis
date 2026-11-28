@@ -1,6 +1,6 @@
 ---
 name: bootstrap-new-app
-description: Checklist for adding a new app or library to the monorepo so it plugs into CI automatically. Use when creating a new workspace package under apps/ or lib/ — covers the required package.json scripts (the "CI script contract"), eslint/tsconfig wiring, and how the affected-package CI picks it up. Invoke whenever the user scaffolds, adds, or registers a new app/service/package.
+description: Checklist for adding a new app or library to the monorepo so it plugs into CI automatically. Use when creating a new workspace package under apps/ or lib/ — covers the required package.json scripts (the "script contract"), eslint/tsconfig wiring, Dockerfile sync, and how the affected-package CI picks it up. Invoke whenever the user scaffolds, adds, or registers a new app/service/package.
 ---
 
 # Bootstrap a new app (or library)
@@ -12,164 +12,146 @@ and CI just works; get them wrong and the package is silently skipped.
 
 Two pieces make this work, and you must respect both:
 
-1. **`scripts/affected.ts`** discovers every workspace package, builds the
-   internal dependency graph, and emits a CI matrix of the packages a change
-   touches (changed + everything that depends on them).
-2. **The CI script contract** — the canonical script names below. A package
-   opts into a check purely by defining a script with the matching name.
+1. **`tis repo affected`** (`cli/src/commands/repo/affected.ts`) discovers
+   every workspace package, builds the internal dependency graph, and lists
+   the packages a change touches (changed + everything that depends on them).
+   CI runs it with `--json` to build its matrix; locally, `--run` runs the
+   same checks.
+2. **The script contract** — the canonical script names below.
 
-> The contract lives in exactly one place in code: the `PREP_SCRIPTS` and
-> `CHECK_SCRIPTS` arrays at the top of `scripts/affected.ts`. If you ever add a
-> new _kind_ of check, add it there too — that is the source of truth.
-
----
-
-## The CI script contract
-
-CI runs, per affected package, `bun run --filter <pkg> <script>` for each of
-these it finds, **in this order**:
-
-| Order | Script            | When to include                               | Must be…                            |
-| ----- | ----------------- | --------------------------------------------- | ----------------------------------- |
-| 1     | `prisma:generate` | Package owns a Prisma schema                  | a prep step (generates client)      |
-| 2     | `typecheck`       | **Always** (any package with TS)              | `tsc --noEmit`, non-mutating        |
-| 3     | `lint`            | Package has an eslint config                  | **non-mutating** — never `--fix`    |
-| 4     | `build`           | App that produces an artifact (not pure libs) | —                                   |
-| 5     | `test`            | Always for apps; libs if they have tests      | must pass with **no** tests present |
-| 6     | `prisma:validate` | Package owns a Prisma schema                  | validates schema (server check)     |
-
-Rules that keep the contract from diverging:
-
-- **`lint` must not mutate.** Use `eslint` / `eslint "<globs>"`, never
-  `--fix`. CI fails on lint errors; it never rewrites code.
-- **`test` must tolerate an empty suite.** Vitest/Jest exit non-zero with no
-  tests, which would make a brand-new app red. Always pass the no-tests flag:
-    - Vitest: `vitest run --passWithNoTests`
-    - Jest: `jest --passWithNoTests`
-- **A package with no `CHECK_SCRIPTS` never appears in CI.** If you create a
-  package and forget `typecheck`, it is invisible to CI. At minimum every
-  TS package gets `typecheck`.
-- **Match the existing tier exactly.** Copy scripts from the closest existing
-  app (see templates below) rather than inventing variants. Divergence here is
-  the thing this skill exists to prevent.
+> Which scripts CI runs lives in exactly one place in code: the
+> `PREP_SCRIPTS` and `CHECK_SCRIPTS` arrays at the top of
+> `cli/src/commands/repo/affected.ts`. If you ever add a new _kind_ of check,
+> add it there too.
 
 ---
 
-## Copy-paste templates by app type
+## The script contract
 
-Pick the row of `apps/` your new app matches (see `.claude/rules/archi-repo.md`).
+Every code package defines these five, with exactly these commands (the
+`--ignore-path` prefix is the relative path to the repo root):
+
+```jsonc
+"scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run --passWithNoTests",
+    "format": "prettier --write . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore && eslint --fix .",
+    "check": "prettier --check . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore"
+}
+```
+
+- `lint` and `check` never mutate; `format` is the only fixing script.
+- `test` must tolerate an empty suite (`--passWithNoTests`). Vitest everywhere,
+  servers included.
+- Prettier only reads ignore files from its cwd, hence the explicit
+  `--ignore-path`s pointing at the root files.
+
+On top of the contract, CI also runs these when present, in this order:
+
+| Order | Script            | When to include                               |
+| ----- | ----------------- | --------------------------------------------- |
+| 1     | `prisma:generate` | Package owns a Prisma schema (prep step)      |
+| 2     | `typecheck`       | contract                                      |
+| 3     | `lint`            | contract                                      |
+| 4     | `build`           | App that produces an artifact (not pure libs) |
+| 5     | `test`            | contract                                      |
+| 6     | `prisma:validate` | Package owns a Prisma schema                  |
+
+Config-only packages (`lib/tsconfig`, `lib/eslint-config`) have no scripts.
+
+---
+
+## ESLint and TypeScript wiring
+
+- `eslint.config.js` is one line, picking a preset from `@monsieurtis/eslint-config`:
+    - `base` — framework-agnostic TS (libs, interfaces, cli)
+    - `react` — React apps and libs (TanStack config)
+    - `nest` — NestJS servers and Nest libs
+
+    ```js
+    export { default } from "@monsieurtis/eslint-config/react";
+    ```
+
+- devDeps: `@monsieurtis/eslint-config: workspace:*`, `@monsieurtis/tsconfig: workspace:*`,
+  `eslint: catalog:tooling`, `prettier: catalog:tooling`, `vitest: catalog:build`.
+- `tsconfig.json` extends `@monsieurtis/tsconfig/{base,client,server}.json`.
+  `base.json` sets `types: []`: opt in to `node`, `bun` or `vite/client`
+  explicitly.
+- **Never** add `paths` to other workspace packages or `baseUrl`: workspace
+  packages resolve through their `exports`. Only app-local aliases belong in
+  `paths` (`@/*` in servers); clients use package.json `imports` (`#/*`).
+
+## Templates by app type
 
 ### Client-only app (Vite — like `crocus`, `harley`)
 
-```jsonc
-"scripts": {
-    "dev": "vite dev --port <PORT>",
-    "build": "vite build",
-    "preview": "vite preview",
-    "test": "vitest run --passWithNoTests",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint",
-    "format": "prettier --write . && eslint --fix",
-    "check": "prettier --check ."
-}
-```
-
-Also add, mirroring `crocus`:
-
-- `eslint.config.js` (copy `apps/crocus/eslint.config.js` verbatim — it's the tanstack config).
-- `tsconfig.json` extending `@monsieurtis/tsconfig/client.json`.
-- devDeps `@tanstack/eslint-config: catalog:tanstack` and `eslint: catalog:tooling`.
+Contract + `dev`, `build`, `preview`. Preset `react`, tsconfig `client.json`
+with `types: ["vite/client"]`.
 
 ### Server-only app (NestJS — like `linlin-server`)
 
+Contract + build/start scripts, run on Bun (workspace libs ship TypeScript
+that Bun transpiles at runtime):
+
 ```jsonc
-"scripts": {
-    "build": "nest build",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "test": "jest --passWithNoTests",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
-    "start:dev": "nest start --watch",
-    "start:prod": "node dist/main",
-    // Only if the app owns a Prisma schema:
-    "prisma:generate": "prisma generate --schema <path/to/schema.prisma>",
-    "prisma:validate": "prisma validate --schema <path/to/schema.prisma>"
-}
+"build": "nest build",
+"start": "nest start --exec bun",
+"start:dev": "nest start --watch --exec bun",
+"start:prod": "bun dist/main.js",
+// Only if the app owns a Prisma schema:
+"prisma:generate": "prisma generate --schema <path/to/schema.prisma>",
+"prisma:validate": "prisma validate --schema <path/to/schema.prisma>"
 ```
 
-- `eslint.config.mjs` — copy `apps/linlin/linlin-server/eslint.config.mjs`.
-- `tsconfig.json` extending `@monsieurtis/tsconfig/server.json`.
-- **Prisma note:** the generated client is git-ignored, so CI runs
-  `prisma:generate` _before_ `typecheck`/`build`/`test`. That ordering is
-  already handled by `affected.ts` (it lists prep scripts first) — you only
-  need to declare the script. Once you add a `migrations/` dir, upgrade
-  `prisma:validate` to drift detection:
-  `prisma migrate diff --from-migrations ./migrations --to-schema-datamodel <schema> --exit-code`.
+Preset `nest`, tsconfig `server.json`, a `vitest.config.ts` (copy linlin-server's).
+Env comes from the process (Bun loads `.env` itself): no `dotenv`.
 
 ### Server + client app (like `linlin`)
 
-It's two workspace packages — a client and a server — under one `apps/<name>/`
-folder, plus an `interfaces/` package. Apply the **client-only** template to
-the client package and the **server-only** template to the server package.
-`interfaces/` is type-only: it gets just `"typecheck": "tsc --noEmit"`.
+A client package, a server package and an `interfaces` package under one
+`apps/<name>/` folder. `interfaces` is a real package (`exports` per folder,
+e.g. `"./domain/*": "./domain/*.ts"`) that both sides depend on with
+`workspace:*` and import by name
+(`@monsieurtis/<name>-interfaces/domain/foo.entity`).
 
-### Library (under `lib/` — like `@monsieurtis/core`, `@monsieurtis/ui`)
+### Library (under `lib/`)
 
-Libraries are checked in isolation (and as dependents when something they
-import changes). They are consumed from source, so usually **no `build`**:
-
-```jsonc
-"scripts": {
-    "typecheck": "tsc --noEmit"
-}
-```
-
-Add `lint` + an eslint config only if you want the lib linted. A lib with
-genuinely zero checks (no `typecheck`) is invisible to CI — don't leave real
-code in that state.
+Contract only, consumed from source (`exports` → `.ts`), so no `build`.
 
 ---
 
 ## Registering the package
 
-1. **Add it to the root `package.json` `workspaces.packages`** (exact path,
-   e.g. `"apps/foo"`, or rely on an existing glob like `"lib/packages/*"`).
-   `affected.ts` reads this list — a package not listed here is invisible.
-2. **Declare internal deps with `workspace:*`** (e.g.
-   `"@monsieurtis/ui": "workspace:*"`). This is what the dependency graph is
-   built from, so the new app's CI fires when an imported lib changes — and
-   the lib's change correctly fans out to this app. No CI file edits needed.
-3. **Use `catalog:` versions** for shared deps (react, tanstack, nest, prisma,
-   tooling…) — see the catalogs in the root `package.json`.
-4. **Run `bun install`** to update `bun.lock` (CI uses `--frozen-lockfile`).
+1. **Add it to the root `package.json` `workspaces.packages`**.
+2. **Declare internal deps with `workspace:*`** — the dependency graph (CI
+   fan-out, Dockerfile COPY lists) is built from them.
+3. **Use `catalog:` versions** for any dependency another package also uses:
+   `tis repo catalog-check` fails CI otherwise.
+4. **Dockerfile?** Put the generated-block markers where workspace sources are
+   copied and let `tis repo sync` fill them (see `apps/crocus/Dockerfile`):
+
+    ```dockerfile
+    ARG BUN_VERSION=0.0.0
+    FROM oven/bun:${BUN_VERSION}-alpine AS deps
+    …
+    # >>> tis repo sync: workspace sources (generated, do not edit)
+    # <<< tis repo sync
+    ```
+
+5. **Run `bun install`** (CI uses `--frozen-lockfile`) and `tis repo sync`.
 
 ---
 
 ## Verify before opening the PR
 
 ```bash
-# 1. The package shows up with the scripts you expect (run from repo root,
-#    simulating that only your new app changed):
-bun scripts/affected.ts main
-#    → confirm your package appears with the right "scripts" list.
-
-# 2. Each declared script actually runs and is non-mutating:
-bun run --filter '<your-package-name>' typecheck
-bun run --filter '<your-package-name>' lint
-bun run --filter '<your-package-name>' test
-# (+ build / prisma:* where applicable)
+tis repo affected          # your package listed with the expected scripts
+tis repo affected --run    # run exactly what CI will run
+tis repo sync --check
+tis repo catalog-check
 ```
 
-If your package is missing from the matrix output, it's almost always one of:
-the path isn't in `workspaces.packages`, `package.json` has no `name`, or it
-has no `CHECK_SCRIPTS` (e.g. no `typecheck`).
-
----
-
-## Formatting
-
-Don't add a repo-wide format step — the `format` job in `app-ci.yml` already
-checks `prettier` on changed files. Just make sure your new files conform to
-the root `.prettierrc.json` (4-space, double quotes): run
-`bunx prettier --write <your new files>` before committing.
+If your package is missing from the list, it's almost always one of: the path
+isn't in `workspaces.packages`, `package.json` has no `name`, or it has no
+check script.

@@ -1,0 +1,28 @@
+name: setup-bun
+description: >
+    Install bun at the version pinned in the root package.json `packageManager`
+    (the single source of truth) and, unless disabled, install dependencies
+    with bun's package cache restored from previous runs.
+
+inputs:
+    install:
+        description: Run `bun install --frozen-lockfile` after setting up bun.
+        default: "true"
+
+runs:
+    using: composite
+    steps:
+        - uses: oven-sh/setup-bun@v2
+          with:
+              bun-version-file: package.json
+
+        - if: inputs.install == 'true'
+          uses: actions/cache@v4
+          with:
+              path: ~/.bun/install/cache
+              key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+              restore-keys: bun-${{ runner.os }}-
+
+        - if: inputs.install == 'true'
+          shell: bash
+          run: bun install --frozen-lockfile

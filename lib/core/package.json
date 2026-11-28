@@ -4,12 +4,20 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "lint": "eslint .",
+        "test": "vitest run --passWithNoTests",
+        "format": "prettier --write . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore && eslint --fix .",
+        "check": "prettier --check . --ignore-path ../../.gitignore --ignore-path ../../.prettierignore"
     },
     "exports": {
         ".": "./src/index.ts"
     },
     "devDependencies": {
-        "@monsieurtis/tsconfig": "workspace:*"
+        "@monsieurtis/eslint-config": "workspace:*",
+        "@monsieurtis/tsconfig": "workspace:*",
+        "eslint": "catalog:tooling",
+        "prettier": "catalog:tooling",
+        "vitest": "catalog:build"
     }
 }

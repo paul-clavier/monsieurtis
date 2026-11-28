@@ -1,11 +1,7 @@
 {
     "extends": "@monsieurtis/tsconfig/base.json",
     "compilerOptions": {
-        "noEmit": true,
-        "baseUrl": ".",
-        "paths": {
-            "@monsieurtis/core": ["../../../lib/core/src/index.ts"]
-        }
+        "noEmit": true
     },
     "include": ["**/*.ts"]
 }

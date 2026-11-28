@@ -17,6 +17,7 @@ model Ingredient {
   name   String            @unique
   label  String
   setups SetupIngredient[]
+  tags   Tag[]
 }
 
 model Setup {
@@ -26,10 +27,12 @@ model Setup {
   description  String
   time         Int
   capacity     Int?
+  dressing     String?
   subSetups    Setup[]           @relation("SetupSubSetups")
   parentSetups Setup[]           @relation("SetupSubSetups")
   ingredients  SetupIngredient[]
-  recipes      Recipe[]
+  tags         Tag[]
+  photos       SetupPhoto[]
 }
 
 model SetupIngredient {
@@ -43,12 +46,38 @@ model SetupIngredient {
   @@id([setupId, ingredientId])
 }
 
-model Recipe {
-  id          String  @id @default(uuid()) @db.Uuid
-  name        String  @unique
-  label       String
-  description String
-  capacity    Int?
-  time        Int
-  setups      Setup[]
+model SetupPhoto {
+  id          String   @id @default(uuid()) @db.Uuid
+  setupId     String   @db.Uuid
+  setup       Setup    @relation(fields: [setupId], references: [id], onDelete: Cascade)
+  key         String   @unique
+  contentType String
+  createdAt   DateTime @default(now())
+
+  @@index([setupId])
+}
+
+model TagCategory {
+  name String @id
+  tags Tag[]
+}
+
+model Tag {
+  name         String       @id
+  categoryName String?
+  category     TagCategory? @relation(fields: [categoryName], references: [name], onUpdate: Cascade, onDelete: SetNull)
+  ingredients  Ingredient[]
+  setups       Setup[]
+
+  @@index([categoryName])
+}
+
+model SetupView {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  query     String?
+  tagNames  String[]
+  match     String   @default("any")
+  scope     String   @default("all")
+  createdAt DateTime @default(now())
 }

@@ -13,3 +13,7 @@ dist-ssr
 .vinxi
 __unconfig*
 todos.json
+
+# Bun workspaces: only the root lockfile is authoritative
+**/bun.lock
+!/bun.lock

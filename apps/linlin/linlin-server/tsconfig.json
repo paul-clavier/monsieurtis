@@ -2,22 +2,16 @@
     "extends": "@monsieurtis/tsconfig/server.json",
     "compilerOptions": {
         "noEmit": true,
-        "noImplicitAny": false,
-        "strictBindCallApply": false,
-        "noFallthroughCasesInSwitch": false,
-        "noUncheckedIndexedAccess": false,
-        "baseUrl": ".",
+        // Repeated from server.json on purpose: workspace libs (e.g.
+        // nest-rest-crud) are transpiled by Bun at runtime using this
+        // tsconfig, and Bun ignores decorator options inherited via
+        // `extends` (it falls back to TC39 decorators, which breaks NestJS).
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "noFallthroughCasesInSwitch": true,
         "paths": {
-            "@/*": ["./src/*"],
-            "@/interfaces/*": ["../interfaces/*"],
-            "@monsieurtis/core": ["../../../lib/core/src/index.ts"],
-            "@monsieurtis/prisma": [
-                "../../../lib/packages/prisma/src/index.ts"
-            ],
-            "@monsieurtis/nest-rest-crud": [
-                "../../../lib/packages/nest-rest-crud/src/index.ts"
-            ]
+            "@/*": ["./src/*"]
         }
     },
-    "include": ["src", "../interfaces", "prisma.config.ts"]
+    "include": ["src", "test", "prisma.config.ts", "vitest.config.ts"]
 }
